@@ -66,6 +66,15 @@ nav { background: #2b7acd; border: 1px solid #236abb; }
 .post-body figure img { display: block; max-width: 100%; height: auto; }
 .post-body figure a { display: block; width: fit-content; max-width: 100%; }
 .post-body figcaption { margin-top: 6px; font-size: 13px; }
+.post-body { min-width: 0; }
+.imported-note h2 { margin: 30px 0 14px; font-size: 21px; scroll-margin-top: 20px; }
+.imported-note h3 { margin: 24px 0 12px; font-size: 18px; }
+.imported-note h4 { margin: 20px 0 10px; font-size: 16px; }
+.imported-note pre { max-width: 100%; overflow-x: auto; margin: 16px 0 24px; padding: 14px 16px; border: 1px solid #ddd; background: #f7f7f7; font: 13px/1.7 Consolas, Menlo, monospace; white-space: pre; overflow-wrap: normal; tab-size: 4; }
+.article-toc { padding: 10px 14px; border: 1px solid #ddd; background: #fafafa; font-size: 14px; }
+.article-toc summary { cursor: pointer; }
+.article-toc ul { margin: 8px 0 0; padding-left: 22px; }
+.side-panel [aria-current="page"] { font-weight: bold; }
 .back-link { margin: 0; padding: 12px 20px; border-top: 1px solid #ddd; text-align: right; font-size: 12px; }
 footer { margin-top: 24px; padding: 14px 0; border-top: 1px solid #ddd; text-align: center; font-size: 12px; }
 @media (max-width: 720px) {
@@ -91,3 +100,12 @@ footer { margin-top: 24px; padding: 14px 0; border-top: 1px solid #ddd; text-ali
   .post-author span { margin: 0; }
   .post-body { min-height: 280px; padding: 20px 16px; }
 }
+
+/* 导入文章的原图、表格与较长分类名。 */
+.collection-label { white-space: normal; overflow-wrap: anywhere; }
+.imported-note img { max-width: 100%; height: auto; }
+.imported-image-link { display: inline-block; max-width: 100%; }
+.imported-note blockquote { margin: 20px 0; padding: 0 16px; border-left: 3px solid #ddd; }
+.imported-table-scroll { max-width: 100%; overflow-x: auto; }
+.imported-note table { border-collapse: collapse; }
+.imported-note th, .imported-note td { padding: 6px 10px; border: 1px solid #ccc; }

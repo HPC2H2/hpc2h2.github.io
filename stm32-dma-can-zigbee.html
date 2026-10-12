@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接 · HPC2H2</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="site.js?v=20261012-other" defer></script>
+</head>
+<body>
+  <header>
+    <div class="masthead">
+      <a class="site-name" href="index.html">HPC2H2</a>
+      <span class="site-description">技术博客</span>
+    </div>
+    <nav aria-label="合集导航" data-site-nav></nav>
+  </header>
+  <p class="breadcrumb"><a href="index.html">首页</a> &gt; <a href="index.html#collection-2" data-collection-name="collection-2">学习笔记</a> &gt; <a href="article-6.html"><span data-menu-label="article-6.html" data-collection="collection-2">嵌入式软件</span></a> &gt; STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接</p>
+  <main class="thread">
+    <div class="thread-heading"><h1>STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接</h1><a href="article-6.html">返回列表</a></div>
+    <div class="post">
+      <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
+      <article class="post-body imported-note" aria-label="STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接">
+        <p class="publish-date">发布时间：<time datetime="2025-11-07T15:48+08:00">2025-11-07 15:48</time> · <a href="https://www.cnblogs.com/HPC2H2/p/19504045" target="_blank" rel="noopener noreferrer">博客园原文</a></p>
+        <details class="article-toc"><summary>章节</summary><ul><li><a href="#post-section-0">需要实现的功能</a></li><li><a href="#post-section-1">需要的硬件及其IOC配置</a></li><li><a href="#post-section-2">上位机端</a></li><li><a href="#post-section-3">下位机端</a></li><li><a href="#post-section-4">需要实现的软件设置</a></li><li><a href="#post-section-5">上位机端</a></li><li><a href="#post-section-11">下位机端</a></li><li><a href="#post-section-16">实验结果</a></li></ul></details>
+        <div class="note-content">
+
+                     
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+<h2 id="post-section-0">需要实现的功能</h2> 
+<p>本系统旨在构建一个 <strong>PC → STM32（上位机）→ ZigBee → STM32（下位机）→ CAN 设备</strong> 的完整无线控制链路，具体功能如下：</p> 
+<ol><li> <p><strong>下行控制路径（PC → 远端设备）</strong></p> 
+  <ul><li>用户通过 PC 串口发送指令数据；</li><li>上位机端 STM32F103C8T6 通过 USART1 接收该数据，并利用 UART 空闲中断（IDLE）配合 DMA 实现<strong>不定长帧接收</strong>；</li><li>数据经由上位机的 USART2 通过 ZigBee DL-22 模块无线透传至下位机；</li><li>下位机端 STM32F103C8T6 通过 USART2 接收数据后： 
+    <ul><li>将有效载荷封装为标准 CAN 帧（DLC ≤ 8），通过 CAN 总线发送给远端设备；</li><li>同时将原始数据<strong>回传至上位机端</strong>，用于状态确认或调试。</li></ul> </li></ul> </li><li> <p><strong>上行反馈路径（下位机端 → PC）</strong></p> 
+  <ul><li>下位机端在完成 CAN 发送后，立即将接收到的数据原样通过 USART2 + ZigBee 回传；</li><li>上位机接收到该回传数据后，通过 USART1 转发给 PC；</li><li>PC 串口助手可同时看到<strong>原始发送指令</strong>与<strong>下位机回传确认</strong>，形成闭环验证。</li></ul> </li><li> <p><strong>关键通信特性</strong></p> 
+  <ul><li>支持<strong>不定长度数据帧</strong>传输（最大 8 字节/帧，适配 CAN DLC 限制）；</li><li>使用 <strong>UART IDLE 中断 + DMA</strong> 实现高效、低 CPU 占用的串口收发；</li><li>上位机实现<strong>双通道并发 DMA 发送</strong>（一路转发至 ZigBee，一路回显至 PC）；</li><li>下位机采用<strong>双缓冲 + 单帧排队机制</strong>，确保在 UART 发送繁忙时不会丢失新数据；</li><li>包含完善的<strong>错误检测与恢复机制</strong>（如清除 UART 错误标志、防止 Size=0 的误触发、过滤全零帧等）；</li><li>CAN 波特率时序经优化，采样点设置为 80%（BS1=7, BS2=2），符合工业推荐范围（75%~85%）。</li></ul> </li></ol> 
+<blockquote> 
+ <p><strong>最终效果</strong>：用户在 PC 串口调试助手中发送一帧十六进制数据（如 <code>AB CD EF 12 34 56 78 90</code>），可立即在同一窗口中看到两帧相同内容——一帧为本地回显，另一帧为下位机处理后的回传确认，表明整个“PC → ZigBee → CAN → 回传”链路工作正常。</p> 
+</blockquote> 
+<h2 id="post-section-1">需要的硬件及其IOC配置</h2> 
+<p>硬件：2块<strong>C8T6</strong>，2块<strong>ZigBee DL22</strong>模块。</p> 
+<h3 id="post-section-2">上位机端</h3> 
+<p>C8T6在<strong>SystemCore</strong>里配置HSE为无源晶振（水晶/陶瓷晶振），Debug配置为Serial Wire。</p> 
+<p><a class="imported-image-link" href="images/stm32-dma-can-zigbee/image-01.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/stm32-dma-can-zigbee/image-01.png" alt="STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接 · 配图 1" width="721" height="156" loading="lazy" decoding="async"></a></p> 
+<p><a class="imported-image-link" href="images/stm32-dma-can-zigbee/image-02.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/stm32-dma-can-zigbee/image-02.png" alt="STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接 · 配图 2" width="643" height="499" loading="lazy" decoding="async"></a></p> 
+<p><a class="imported-image-link" href="images/stm32-dma-can-zigbee/image-03.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/stm32-dma-can-zigbee/image-03.png" alt="STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接 · 配图 3" width="726" height="53" loading="lazy" decoding="async"></a></p> 
+<p><strong>Connectivity</strong>里配置USART1（与电脑通信）和USART2（与ZigBee模块通信），System Core 再配置DMA（或者从串口的界面可以直接跳转到配置DMA的界面），配置均默认。</p> 
+<p><a class="imported-image-link" href="images/stm32-dma-can-zigbee/image-04.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/stm32-dma-can-zigbee/image-04.png" alt="STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接 · 配图 4" width="562" height="536" loading="lazy" decoding="async"></a></p> 
+<p>System Core中DMA的配置：</p> 
+<p><a class="imported-image-link" href="images/stm32-dma-can-zigbee/image-05.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/stm32-dma-can-zigbee/image-05.png" alt="STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接 · 配图 5" width="671" height="489" loading="lazy" decoding="async"></a></p> 
+<p>DMA的好处是一次能搬运指定数量的数据，且减少CPU的负担。</p> 
+<p>NVIC配置，勾选USART1 global interrupt和USART2 global interrupt。</p> 
+<p><a class="imported-image-link" href="images/stm32-dma-can-zigbee/image-06.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/stm32-dma-can-zigbee/image-06.png" alt="STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接 · 配图 6" width="804" height="553" loading="lazy" decoding="async"></a></p> 
+<h3 id="post-section-3">下位机端</h3> 
+<p>C8T6System Core配置同上位机端，开USART1（连接ZigBee模块）和CAN（连接其他单片机）DMA、NVIC。</p> 
+<p><a class="imported-image-link" href="images/stm32-dma-can-zigbee/image-07.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/stm32-dma-can-zigbee/image-07.png" alt="STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接 · 配图 7" width="665" height="678" loading="lazy" decoding="async"></a></p> 
+<p>DMA作数据回显，配置如下：</p> 
+<p><a class="imported-image-link" href="images/stm32-dma-can-zigbee/image-08.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/stm32-dma-can-zigbee/image-08.png" alt="STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接 · 配图 8" width="1002" height="499" loading="lazy" decoding="async"></a></p> 
+<p>CAN的配置和默认相比，改了Time Quanta in Bit Segment 1/2（简称BS1或BS2） 为7 Times/2Times。</p> 
+<p>这是由于需要让<strong>采样点（Sample Point）</strong>在<strong>75%~85%</strong>之间，这么设置后</p> 
+<p><strong>采样点=(SYNC_SEG+BS1)/(总位时间)=(1+7)/(1+7+2)=80%。</strong></p> 
+<p><a class="imported-image-link" href="images/stm32-dma-can-zigbee/image-09.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/stm32-dma-can-zigbee/image-09.png" alt="STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接 · 配图 9" width="748" height="277" loading="lazy" decoding="async"></a></p> 
+<p>中断的配置：</p> 
+<p><a class="imported-image-link" href="images/stm32-dma-can-zigbee/image-10.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/stm32-dma-can-zigbee/image-10.png" alt="STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接 · 配图 10" width="710" height="536" loading="lazy" decoding="async"></a></p> 
+<h2 id="post-section-4">需要实现的软件设置</h2> 
+<p>设想是电脑发数据，经过上位机端C8T6串口1，C8T6串口2发给下位机端C8T6串口2，下位机端C8T6发CAN信号给其他单片机，并通过串口2发信号上位机端给C8T6的串口2。</p> 
+<p>也一并设置了上位机端给下位机端发信，和上位机端接收下位机端发的信的时候，给电脑发数据。</p> 
+<h3 id="post-section-5">上位机端</h3> 
+<p>都在main.c中实现。关键点：</p> 
+<p>1. 使用HAL_UARTEx_ReceiveToIdle_DMA()容忍变长数据；</p> 
+<p>2. USART1 收到的数据保存在pc_rx_buf，随后用这块缓冲发两路DMA。</p> 
+<p>3. 用两个volatile标志同步两个TX的完成，再重启Start_PC_to_DN_RX()。</p> 
+<h4 id="post-section-6">头文件</h4> 
+<p>函数u1_printf_async()所需的头文件，u1_printf_async()这个函数留作备用，现工程中没有使用。</p> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code class="language-cpp">/* USER CODE BEGIN Includes */
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdarg.h&gt;
+/* USER CODE END Includes */</code></pre> 
+<h4 id="post-section-7">宏定义</h4> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code class="language-cpp">/* USER CODE BEGIN PM */
+#define LEN 8
+/* USER CODE END PM */</code></pre> 
+<h4 id="post-section-8">变量定义</h4> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code class="language-cpp">/* USER CODE BEGIN PV */
+// 接收缓冲
+uint8_t u1_rxBuffer[8];
+uint8_t u2_rxBuffer[8];
+
+// PC-下位机 通道缓冲
+static uint8_t pc_rx_buf[LEN];
+// 下位机(down node)-PC 通道缓冲
+static uint8_t dn_rx_buf[LEN];
+
+volatile uint8_t pc2dn_tx_pending = 0; //USART1-&gt;USART2 正在DMA发送
+volatile uint8_t pc_echo_tx_pending = 0; ////USART1-&gt;USART1 回显正在DMA发送
+/* USER CODE END PV */</code></pre> 
+<h4 id="post-section-9">DMA流控制启动函数定义</h4> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code class="language-cpp">/* USER CODE BEGIN PFP */
+static inline void Start_PC_to_DN_Rx(void) {
+    HAL_UARTEx_ReceiveToIdle_DMA(&amp;huart1, pc_rx_buf, LEN);
+    // 禁用半传输中断，只关注接收完成或空闲
+    __HAL_DMA_DISABLE_IT(huart1.hdmarx, DMA_IT_HT);
+}
+static inline void Start_DN_to_PC_Rx(void) {
+    HAL_UARTEx_ReceiveToIdle_DMA(&amp;huart2, dn_rx_buf, LEN);
+    // 禁用半传输中断，只关注接收完成或空闲
+    __HAL_DMA_DISABLE_IT(huart2.hdmarx, DMA_IT_HT);
+}
+/* USER CODE END PFP */</code></pre> 
+<h4 id="post-section-10">串口相关函数定义</h4> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code class="language-cpp">/* USER CODE BEGIN 4 */
+/**
+ * @brief USART1 发送不定长度信息
+ */
+void u1_printf_async(char* fmt, ...) {
+    uint16_t len;
+    va_list ap;
+    va_start(ap, fmt);
+    uint8_t buf[200];
+    vsprintf((char*)buf, fmt, ap);
+    va_end(ap);
+    len = strlen((char*)buf);
+
+    // 使用中断发送，不阻塞
+    HAL_UART_Transmit_IT(&amp;huart1, buf, len);
+}
+
+// 接收事件回调（转发+回显）
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+    if (huart == &amp;huart1) {
+    	// 启动两路DMA发送，USART1-&gt;USART2转发和USART1-&gt;USART1回显
+    	pc2dn_tx_pending = 0;
+    	pc_echo_tx_pending = 0;
+    	if(HAL_UART_Transmit_DMA(&amp;huart2, pc_rx_buf, Size) == HAL_OK)
+    		pc2dn_tx_pending = 1;
+    	if(HAL_UART_Transmit_DMA(&amp;huart1, pc_rx_buf, Size) == HAL_OK)
+    		pc_echo_tx_pending = 1;
+    	// 如果两路都没成功启动，为避免卡死立即重启接收
+    	if(pc2dn_tx_pending == 0 &amp;&amp; pc_echo_tx_pending == 0)
+    		Start_PC_to_DN_Rx();
+        // 注：如果成功启动了任意一路DMA，则在TxCpltCallback 会重启接收
+    }
+    else if (huart == &amp;huart2) {
+        // DN -&gt; PC
+        if (HAL_UART_Transmit_DMA(&amp;huart1, dn_rx_buf, Size) != HAL_OK) {
+             // 如果发送失败，立即重启接收
+             Start_DN_to_PC_Rx();
+             // 成功则等huart1 Tx完成后在HAL_UART_TxCpltCallback() 中重启huart2 的接收
+        }
+    }
+}
+
+// 串口发送完成回调：在对应发送完成后，重启对应端的接收
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+
+    if (huart == &amp;huart2) {
+        if(pc2dn_tx_pending){
+        	pc2dn_tx_pending = 0;
+        	if(pc_echo_tx_pending == 0)
+        		// 如果两路都完成，重启huart1 接收
+        		Start_PC_to_DN_Rx();
+        }
+        else
+        	Start_PC_to_DN_Rx();
+    }
+    else if (huart == &amp;huart1) {
+    	if(pc_echo_tx_pending){
+    		pc_echo_tx_pending = 0;
+    		if(pc2dn_tx_pending == 0)
+    			Start_PC_to_DN_Rx();
+    	}
+        // 刚完成的是 DN-&gt;PC 的发送，现在重启 huart2 接收
+    	else
+    		Start_DN_to_PC_Rx();
+    }
+}
+
+// 错误回调
+static inline void Recover_UART(UART_HandleTypeDef *huart)
+{
+    // 强制清除所有错误标志
+    __HAL_UART_CLEAR_FLAG(huart, UART_FLAG_PE);
+    __HAL_UART_CLEAR_FLAG(huart, UART_FLAG_FE);
+    __HAL_UART_CLEAR_FLAG(huart, UART_FLAG_NE);
+    __HAL_UART_CLEAR_FLAG(huart, UART_FLAG_ORE);
+
+    // 中止 DMA 接收/发送并重启
+    HAL_UART_AbortReceive(huart);
+    HAL_UART_AbortTransmit(huart);
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+
+	Recover_UART(huart);
+    if (huart == &amp;huart1) {
+        pc2dn_tx_pending = 0;
+        pc_echo_tx_pending = 0;
+    	Start_PC_to_DN_Rx();
+    } else if (huart == &amp;huart2) {
+        Start_DN_to_PC_Rx();
+    }
+}
+
+/* USER CODE END 4 */</code></pre> 
+<h3 id="post-section-11">下位机端</h3> 
+<p>都在main.c中实现。关键点：</p> 
+<p>1. 串口接收空闲中断回调存在Size为0的可能（极短IDLE或误触发），程序中对Size进行判断，其为0则return，避免启动DMA发送0字节。</p> 
+<p>2. 使用双缓冲和单帧排队机制，当前TX正忙时，把新数据放入pending缓冲；等TxCpltCallback再发这帧。</p> 
+<p>3. 用“读SR再读DR”清除错误标志，避免宏在F1上不可靠。（参考链接：<a target="_blank" rel="noopener noreferrer" href="https://blog.csdn.net/lzhco/article/details/116095407">https://blog.csdn.net/lzhco/article/details/116095407</a>）</p> 
+<p>4. CAN DLC限制用min(Size, 8)做了判断。</p> 
+<p>5. 丢弃全0数据，防止地不稳定的时候自激回环。</p> 
+<h4 id="post-section-12">头文件</h4> 
+<p>用于memcpy()的调用。</p> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code class="language-cpp">/* USER CODE BEGIN Includes */
+#include &lt;string.h&gt;
+/* USER CODE END Includes */</code></pre> 
+<h4 id="post-section-13">宏定义</h4> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code class="language-cpp">/* USER CODE BEGIN PD */
+#define LEN 8
+/* USER CODE END PD */</code></pre> 
+<h4 id="post-section-14">变量定义</h4> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code class="language-cpp">/* USER CODE BEGIN PV */
+static uint8_t u1_buf[LEN]; // RX DMA写入缓冲(ReceiveToldle)
+static uint8_t tx_buf[LEN]; //立即发送用的TX缓冲
+static uint8_t tx_pending_buf[LEN]; //排队用的备用TX缓冲
+static volatile uint8_t is_tx_busy = 0; //UART TX 正在DMA发送
+static volatile uint8_t is_tx_pending = 0; //有一帧待发送
+static volatile uint16_t pending_len = 0;
+static CAN_TxHeaderTypeDef TxHeader;
+static uint32_t TxMailbox;
+/* USER CODE END PV */</code></pre> 
+<h4 id="post-section-15">串口相关函数定义</h4> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code class="language-cpp">/* USER CODE BEGIN 4 */
+static void Start_UART2_Rx(void)
+{
+    HAL_UARTEx_ReceiveToIdle_DMA(&amp;huart2, u1_buf, LEN);
+    // 禁用半传输中断
+    __HAL_DMA_DISABLE_IT(huart2.hdmarx, DMA_IT_HT);
+}
+
+
+// 接收事件回调（下位机端）
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+	if (huart == &amp;huart2) {
+		if(Size == 0){
+			Start_UART2_Rx();
+			return;
+		}
+
+		uint16_t n = (Size &gt; LEN)? LEN:Size;
+
+		// 过滤错误帧
+		if (huart-&gt;ErrorCode != HAL_UART_ERROR_NONE){
+			Start_UART2_Rx();
+			return;
+		}
+		// 将接收到的数据复制到独立的TX缓冲，避免与下一次RX冲突
+		memcpy(tx_buf, u1_buf, n);
+
+		// 0. 丢弃全0帧，避免自激回环
+		uint8_t all_zero = 1;
+		for (uint16_t i = 0; i &lt; n; ++i)
+		{
+			if (tx_buf[i] != 0x00){
+				all_zero = 0;
+				break;
+			}
+		}
+
+		if(all_zero){
+			Start_UART2_Rx();
+			return;
+		}
+
+		// 1. CAN发送（DLC&lt;=8)
+		uint8_t dlc = (n &gt; 8) ? 8 : n;
+		TxHeader.DLC = dlc;
+		(void)HAL_CAN_AddTxMessage(&amp;hcan, &amp;TxHeader, u1_buf, &amp;TxMailbox);
+
+		// 2. 回传到上位机端
+		//如果UART2当前空闲，则直接启动DMA发送；否则排队一帧，等TxCplt再发
+		if (HAL_UART_GetState(&amp;huart2) == HAL_UART_STATE_READY){
+			if(HAL_UART_Transmit_DMA(&amp;huart2, tx_buf, n) == HAL_OK)
+				is_tx_busy = 1;
+			else{
+				// 发送启动失败，尝试排队一帧
+				memcpy(tx_pending_buf, tx_buf, n);
+				pending_len = n;
+				is_tx_pending = 1;
+			}
+		}
+		else{
+			// TX正忙，尝试排队一帧
+			memcpy(tx_pending_buf, tx_buf, n);
+			pending_len = n;
+			is_tx_pending = 1;
+		}
+
+		// 3.重启接收
+		Start_UART2_Rx();
+	}
+}
+
+// 发送完成回调：如有排队帧则继续发；否则标记空闲
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (huart != &amp;huart2) return;
+
+	if(is_tx_pending){
+		// 取出排队帧发送
+		if(HAL_UART_Transmit_DMA(&amp;huart2, tx_pending_buf, pending_len) == HAL_OK)
+			is_tx_pending = 0;
+		// 此时的tx_busy 仍为1，因为需要保持忙状态直到下一次发送完成
+		else{
+			// 启动失败，丢弃排队帧，标记空闲
+			is_tx_pending = 0;
+			is_tx_busy = 0;
+		}
+	}
+	else
+		is_tx_busy = 0;
+}
+
+// 错误回调(F1清错+重启RX）
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	if (huart != &amp;huart2)  return;
+
+	// 读SR-&gt;读DR清除错误标志
+	volatile uint32_t tmp;
+	tmp = huart-&gt;Instance-&gt;SR;
+	tmp = huart-&gt;Instance-&gt;DR;
+	(void)tmp;//给编译器说tmp 该丢弃
+
+	// 终止正在进行的收发，防止状态机卡死
+	HAL_UART_AbortReceive(huart);
+	HAL_UART_AbortTransmit(huart);
+
+	//清除状态，防止误判忙/在排队
+	is_tx_busy = 0;
+	is_tx_pending = 0;
+	pending_len = 0;
+
+	//立即重启接收
+	Start_UART2_Rx();
+}
+
+/* USER CODE END 4 */</code></pre> 
+<h2 id="post-section-16">实验结果</h2> 
+<p>在 PC 端串口调试助手中以十六进制格式发送数据 <code>ABCDEF1234567890</code>，并设置为十六进制显示模式，可观察到两条内容相同的返回数据。这表明：上位机 STM32C8T6 成功接收了 PC 发送的指令，并将其转发至下位机；下位机处理后通过 ZigBee 将原始数据回传，上位机再将该回传数据转发回 PC。实验现象与系统设计功能完全一致。</p> 
+<p><a class="imported-image-link" href="images/stm32-dma-can-zigbee/image-11.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/stm32-dma-can-zigbee/image-11.png" alt="STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接 · 配图 11" width="784" height="481" loading="lazy" decoding="async"></a></p>
+                
+
+</div>
+      </article>
+    </div>
+    <p class="back-link"><a href="article-6.html">返回<span data-menu-label="article-6.html" data-collection="collection-2">嵌入式软件</span></a></p>
+  </main>
+  <footer>HPC2H2</footer>
+</body>
+</html>

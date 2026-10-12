@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Web前端笔记|表格、＜div＞标签、＜span＞标签、列表、表单 · HPC2H2</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="site.js?v=20261012-other" defer></script>
+</head>
+<body>
+  <header>
+    <div class="masthead">
+      <a class="site-name" href="index.html">HPC2H2</a>
+      <span class="site-description">技术博客</span>
+    </div>
+    <nav aria-label="合集导航" data-site-nav></nav>
+  </header>
+  <p class="breadcrumb"><a href="index.html">首页</a> &gt; <a href="index.html#collection-2" data-collection-name="collection-2">学习笔记</a> &gt; <a href="article-4.html"><span data-menu-label="article-4.html" data-collection="collection-2">编程语言与程序设计</span></a> &gt; Web前端笔记|表格、＜div＞标签、＜span＞标签、列表、表单</p>
+  <main class="thread">
+    <div class="thread-heading"><h1>Web前端笔记|表格、＜div＞标签、＜span＞标签、列表、表单</h1><a href="article-4.html">返回列表</a></div>
+    <div class="post">
+      <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
+      <article class="post-body imported-note" aria-label="Web前端笔记|表格、＜div＞标签、＜span＞标签、列表、表单">
+        <p class="publish-date">发布时间：<time datetime="2023-05-30T15:35+08:00">2023-05-30 15:35</time> · <a href="https://www.cnblogs.com/HPC2H2/p/19504257" target="_blank" rel="noopener noreferrer">博客园原文</a></p>
+        <details class="article-toc"><summary>章节目录</summary><ul><li><a href="#post-section-0">表格</a></li>
+<li><a href="#post-section-5">&lt; div&gt;标签</a></li>
+<li><a href="#post-section-6">&lt; span&gt;标签</a></li>
+<li><a href="#post-section-7">无序列表</a></li>
+<li><a href="#post-section-8">有序列表</a></li>
+<li><a href="#post-section-9">定义列表</a></li>
+<li><a href="#post-section-10">表单</a></li>
+<li><a href="#post-section-12">单选按钮和复选框</a></li>
+<li><a href="#post-section-13">按钮</a></li>
+<li><a href="#post-section-17">图像域和文件域</a></li>
+<li><a href="#post-section-18">文本域和列表</a></li></ul></details>
+        <div class="note-content"><h2 id="post-section-0">表格</h2>
+<h3 id="post-section-1">简单表格</h3>
+<p>由表题、表头、单元格构成。</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;!--&lt;table&gt;为表格标记--&gt;
+&lt;table&gt;
+    &lt;!--&lt;caption&gt;为表题标签--&gt;
+    &lt;caption&gt;表题&lt;/caption&gt;
+    &lt;!--&lt;tr&gt;为行标签--&gt;
+    &lt;tr&gt;
+        &lt;!--&lt;td&gt;为表头标记--&gt;
+        &lt;th&gt;表头&lt;/th&gt;
+        &lt;th&gt;表头&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;!--&lt;td&gt;为单元格--&gt;
+        &lt;td&gt;单元格&lt;/td&gt;
+        &lt;td&gt;单元格&lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;</code></pre>
+<h3 id="post-section-2">表格的样式</h3>
+<p>可以设置表格宽度、高度、对齐方式、插入图片等。如：</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;table align="center" width="66%" height="480" align="center"&gt;</code></pre>
+<h3 id="post-section-3">表格的合并</h3>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;td rowspan="跨的行数"&gt;
+&lt;td colspan="跨的列数"&gt;</code></pre>
+<p>跨的列数和行数的对象都是当前单元格。</p>
+<h3 id="post-section-4">使用&lt;colgroup&gt;标签</h3>
+<p>设置不同列的样式。如：</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">    &lt;colgroup&gt;
+        &lt;col style="background-color: #7ef5ff"&gt;
+        &lt;col style="background-color: #B8E0D2"&gt;
+        &lt;col style="background-color: #D6EADF"&gt;
+        &lt;col style="background-color: #EAC4D5"&gt;
+    &lt;/colgroup&gt;</code></pre>
+<h2 id="post-section-5">&lt; div&gt;标签</h2>
+<p>&lt;div&gt;的首标签中的样式作用于首尾标签中的内容。</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;div id="value" align="value" class="value" style="value"&gt;
+&lt;/div&gt;</code></pre>
+<p>id：等于&lt;div&gt;的名字，通常配合CSS使用。</p>
+<p>align：用于控制&lt;div&gt;标签中元素的对齐方式，其值可以是left、center和right，分别用于设置元素的居左、居中和居右对齐。</p>
+<p>class：用于设置&lt;div&gt;标签中元素的样式。其值为CSS样式中的class选择符。</p>
+<p>style：用于设置&lt;div&gt;标签中元素的样式。其值为CSS属性值，各属性值应用分号分隔。</p>
+<h2 id="post-section-6">&lt; span&gt;标签</h2>
+<p>&lt;span&gt;标签是行内标签，语法格式同&lt;div&gt;。当其它行内元素都不合适时使用。</p>
+<h2 id="post-section-7">无序列表</h2>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;ul type=符号类型&gt;
+    &lt;li&gt;第一项&lt;/li&gt;
+    &lt;li&gt;第二项&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+<p>符号类型：disc实心圆（默认）、circle：空心圆、square：实心正方形。可为ul标签或li添加type属性。</p>
+<h2 id="post-section-8">有序列表</h2>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;ol type=序号类型 start="起始排列数值"&gt;
+    &lt;li&gt;第一项&lt;/li&gt;
+    &lt;li&gt;第二项&lt;/li&gt;
+&lt;/ol&gt;</code></pre>
+<p>序号类型：1、a、A、i、I</p>
+<h2 id="post-section-9">定义列表</h2>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;dl&gt;
+        &lt;dt&gt;名词一&lt;/dt&gt;
+    &lt;dd&gt;解释一&lt;/dd&gt;
+    &lt;dd&gt;解释二&lt;/dd&gt;
+        &lt;dt&gt;名词二&lt;/dt&gt;
+    &lt;dd&gt;解释一&lt;/dd&gt;
+    &lt;dd&gt;解释二&lt;/dd&gt;
+&lt;/dl&gt;</code></pre>
+<h2 id="post-section-10">表单</h2>
+<h3 id="post-section-11">文本框和密码框</h3>
+<p>表单是与用户交互的区域，比如登录界面。</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;input type="text" name=" " size=" " maxlength=" " value=" "&gt;</code></pre>
+<p>当type属性值是text时，输入可见。为password，则输入文本框中文字以星号“*”或圆点表示。</p>
+<p>name：文本框的名称，用于和页面的其他控件加以区别；不能包含特殊字符。</p>
+<p>size：定义文本框在页面中显示的长度，以字符为单位。</p>
+<p>maxlength：定义文本框最多可以输入的文字数，以字符为单位。</p>
+<p>value：定义文本框中的默认值。</p>
+<h2 id="post-section-12">单选按钮和复选框</h2>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;input type="radio" value="单选按钮的取值" name="单选按钮名称" checked="checked"/&gt;</code></pre>
+<p>value：设置用户选中该项目后，传送到处理程序中的值。</p>
+<p>name：单选按钮的名称。一组单选按钮选中，往往其名称相同，这样在传递时才能更好地对某一个选择内容的取值进行判断。</p>
+<p>checked：表示这一单选按钮默认被选中，在一组单选按钮中只能友一项单选按钮被设置为checked。</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;input type="checkbox" value="复选框的取值" name="名称" checked="checked"/&gt;</code></pre>
+<p>在一组复选框中，可以设置多个复选框被默认选中，其他同单选按钮。</p>
+<h2 id="post-section-13">按钮</h2>
+<h4 id="post-section-14">普通按钮</h4>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;input type="button" value="按钮上显示的文字" name="按钮名称" onclick="处理程序"/&gt;</code></pre>
+<p>onclick：当鼠标点击按钮时进行的处理。</p>
+<h4 id="post-section-15">提交按钮</h4>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;input type="submit" value="按钮上显示的文字" name="按钮名称"/&gt;</code></pre>
+<p>不需要设置onclick属性，在单击此类按钮时可实现表单内容的提交。</p>
+<p>当没有设置value属性时，其值默认为“提交”。</p>
+<h4 id="post-section-16">重置按钮</h4>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;input type="reset" value="按钮上显示的文字" name="按钮名称"/&gt;</code></pre>
+<p>不需要设置onclick属性，在单击此类按钮时可实现表单内容的清除，并恢复默认表单设定。</p>
+<p>当没有设置value属性时，其值默认为“重置”。</p>
+<p>定义按钮时，除了使用&lt;input&gt;标签以外，也可以使用&lt;button&gt;双标签。</p>
+<h2 id="post-section-17">图像域和文件域</h2>
+<p>图像域是指可以用在按钮位置上的图片，这幅图片具有按钮的功能。</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;input type="image" src="" name=" "/&gt;</code></pre>
+<p>name为所代表的按键，例如submit、button等。默认值为“button”。</p>
+<p>文件域用于查找硬盘中的文件路径，然后通过表单将选中的文件上传。</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;input type="file" accept="" name=" "/&gt;</code></pre>
+<p>accept：所接受的文件类别。参考：</p>
+<p><a href="https://blog.csdn.net/good_good_xiu/article/details/117994154" rel="noopener noreferrer" target="_blank">http请求头中的Accept的用处和常用的值_请求头accept_good_good_xiu的博客-CSDN博客</a></p>
+<p>name为控件的名称标识，用于与页面中其它控件区别。</p>
+<h2 id="post-section-18">文本域和列表</h2>
+<p>文本域可以添加多行文字，从而输入更多文本。在一些留言板中常见。</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;textarea name="文本域名称" cols="列数" rows="行数"&gt;&lt;/textarea&gt;</code></pre>
+<p>列表类的控件主要用来选择给定答案中的一种，它主要是出于节省页面空间的目的而设计的。</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;select name=""&gt;
+                        &lt;option value=""&gt;选项显示内容&lt;/option&gt;
+                        &lt;option value=""&gt;选项显示内容&lt;/option&gt;
+                    &lt;/select&gt;</code></pre>
+<p>详见：<a href="https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/select" rel="noopener noreferrer" target="_blank">&lt;select&gt; - HTML（超文本标记语言） | MDN (mozilla.org)</a></p>
+<p>当声明multiple这个属性后，大多数浏览器都会显示一个可滚动的列表框，而非一个下拉菜单。</p></div>
+      </article>
+    </div>
+    <p class="back-link"><a href="article-4.html">返回<span data-menu-label="article-4.html" data-collection="collection-2">编程语言与程序设计</span></a></p>
+  </main>
+  <footer>HPC2H2</footer>
+</body>
+</html>

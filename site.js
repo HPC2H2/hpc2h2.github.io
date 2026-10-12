@@ -28,7 +28,7 @@ const collections = [
         "href": "article-3.html"
       },
       {
-        "label": "编程语言",
+        "label": "编程语言与程序设计",
         "href": "article-4.html"
       },
       {
@@ -49,7 +49,7 @@ const collections = [
       },
       {
         "label": "其他",
-        "href": "article-8.html"
+        "href": "other-notes.html"
       }
     ]
   },
@@ -123,7 +123,20 @@ for (const node of document.querySelectorAll('[data-collection-name]')) {
   if (collection) node.textContent = (node.dataset.prefix || '') + collection.name;
 }
 
-// 示例文章路径中的菜单名也取自共用配置。
+// 分类目录的侧栏与顶部导航使用同一份学习笔记菜单。
+for (const list of document.querySelectorAll('[data-study-links]')) {
+  const collection = collections.find(item => item.id === 'collection-2');
+  for (const entry of collection?.items || []) {
+    const row = element('li');
+    const link = element('a', '', entry.label);
+    link.href = entry.href;
+    if (entry.href === location.pathname.split('/').pop()) link.setAttribute('aria-current', 'page');
+    row.append(link);
+    list.append(row);
+  }
+}
+
+// 文章路径和分类目录中的菜单名也取自共用配置。
 for (const node of document.querySelectorAll('[data-menu-label]')) {
   const collection = collections.find(item => item.id === node.dataset.collection);
   const entry = collection?.items.find(item => item.href === node.dataset.menuLabel);

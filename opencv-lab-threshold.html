@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>gpt4实现对摄像头帧缓冲区图像的LAB阈值选择界面（python-opencv) · HPC2H2</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="site.js?v=20261012-other" defer></script>
+</head>
+<body>
+  <header>
+    <div class="masthead">
+      <a class="site-name" href="index.html">HPC2H2</a>
+      <span class="site-description">技术博客</span>
+    </div>
+    <nav aria-label="合集导航" data-site-nav></nav>
+  </header>
+  <p class="breadcrumb"><a href="index.html">首页</a> &gt; <a href="index.html#collection-2" data-collection-name="collection-2">学习笔记</a> &gt; <a href="article-5.html"><span data-menu-label="article-5.html" data-collection="collection-2">框架和库</span></a> &gt; gpt4实现对摄像头帧缓冲区图像的LAB阈值选择界面（python-opencv)</p>
+  <main class="thread">
+    <div class="thread-heading"><h1>gpt4实现对摄像头帧缓冲区图像的LAB阈值选择界面（python-opencv)</h1><a href="article-5.html">返回列表</a></div>
+    <div class="post">
+      <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
+      <article class="post-body imported-note" aria-label="gpt4实现对摄像头帧缓冲区图像的LAB阈值选择界面（python-opencv)">
+        <p class="publish-date">发布时间：<time datetime="2023-07-05T21:20+08:00">2023-07-05 21:20</time> · <a href="https://www.cnblogs.com/HPC2H2/p/19504346" target="_blank" rel="noopener noreferrer">博客园原文</a></p>
+        <details class="article-toc"><summary>章节目录</summary><ul><li><a href="#post-section-0">图形界面效果</a></li><li><a href="#post-section-1">代码</a></li></ul></details>
+        <div class="note-content">
+
+                    <p><strong>代码全是GPT4写的</strong>，我就提出Prompt和要改的地方而已。</p>
+
+<h2 id="post-section-0">图形界面效果</h2>
+
+<p><a class="imported-image-link" href="images/opencv-lab-threshold/image-01.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/opencv-lab-threshold/image-01.png" alt="gpt4实现对摄像头帧缓冲区图像的LAB阈值选择界面（python-opencv) · 配图 1" width="1448" height="397" loading="lazy" decoding="async"></a></p>
+
+<p>可复制阈值：(xxx, xxx, xxx, xxx, xxx, xxx)</p>
+
+<h2 id="post-section-1">代码</h2>
+
+<pre tabindex="0" aria-label="代码，可横向滚动"><code class="language-python">import cv2
+import numpy as np
+import time
+from tkinter import *
+from PIL import Image, ImageTk
+import pyperclip  # new
+
+# Global variables for storing the LAB color space threshold values
+l_min_g, a_min_g, b_min_g, l_max_g, a_max_g, b_max_g = 0, 0, 0, 255, 255, 255
+
+class App:
+    def __init__(self, window, window_title, video_source=0):
+        self.window = window
+        self.window.title(window_title)
+        self.video_source = video_source
+        self.ok = False
+
+        self.vid = cv2.VideoCapture(self.video_source)
+        if not self.vid.isOpened():
+            raise ValueError("Unable to open video source", video_source)
+
+        self.canvas1 = Canvas(window, width=480, height=360)
+        self.canvas1.pack(side=LEFT)
+        self.canvas2 = Canvas(window, width=480, height=360)
+        self.canvas2.pack(side=LEFT)
+
+        self.btn_snapshot = Button(window, text="Snapshot", width=50, command=self.snapshot)
+        self.btn_snapshot.pack(anchor=CENTER, expand=True)
+
+        self.l_min_slider = Scale(window, from_=0, to=255, orient=HORIZONTAL, label="L_min", length=480)
+        self.l_min_slider.pack()
+
+        self.a_min_slider = Scale(window, from_=0, to=255, orient=HORIZONTAL, label="A_min", length=480)
+        self.a_min_slider.pack()
+
+        self.b_min_slider = Scale(window, from_=0, to=255, orient=HORIZONTAL, label="B_min", length=480)
+        self.b_min_slider.pack()
+
+        self.l_max_slider = Scale(window, from_=0, to=255, orient=HORIZONTAL, label="L_max", length=480)
+        self.l_max_slider.pack()
+
+        self.a_max_slider = Scale(window, from_=0, to=255, orient=HORIZONTAL, label="A_max", length=480)
+        self.a_max_slider.pack()
+
+        self.b_max_slider = Scale(window, from_=0, to=255, orient=HORIZONTAL, label="B_max", length=480)
+        self.b_max_slider.pack()
+
+        self.btn_copy = Button(window, text="Copy LAB Values", command=self.copy_values)  # new
+        self.btn_copy.pack()
+
+        self.delay = 10
+        self.update()
+
+        self.window.mainloop()
+
+    def snapshot(self):
+        if self.ok:
+            cv2.imwrite("frame-" + time.strftime("%d-%m-%Y-%H-%M-%S") + ".jpg", cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR))
+
+    def copy_values(self):  # new
+        l_min = self.l_min_slider.get()
+        a_min = self.a_min_slider.get()
+        b_min = self.b_min_slider.get()
+        l_max = self.l_max_slider.get()
+        a_max = self.a_max_slider.get()
+        b_max = self.b_max_slider.get()
+
+        values_str = f"({l_min}, {a_min}, {b_min}, {l_max}, {a_max}, {b_max})"
+        pyperclip.copy(values_str)
+
+    def update(self):
+        ret, self.frame = self.vid.read()
+        if ret:
+            self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+            self.photo1 = ImageTk.PhotoImage(image=Image.fromarray(self.frame).resize((480, 360)))
+            self.canvas1.create_image(0, 0, image=self.photo1, anchor=NW)
+
+            l_min = self.l_min_slider.get()
+            a_min = self.a_min_slider.get()
+            b_min = self.b_min_slider.get()
+            l_max = self.l_max_slider.get()
+            a_max = self.a_max_slider.get()
+            b_max = self.b_max_slider.get()
+
+            lower_bound = np.array([l_min, a_min, b_min])
+            upper_bound = np.array([l_max, a_max, b_max])
+            mask = cv2.inRange(cv2.cvtColor(self.frame, cv2.COLOR_RGB2Lab), lower_bound, upper_bound)
+
+            self.photo2 = ImageTk.PhotoImage(image=Image.fromarray(mask).resize((480, 360)))
+            self.canvas2.create_image(0, 0, image=self.photo2, anchor=NW)
+
+            self.ok = True
+
+        self.window.after(self.delay, self.update)
+
+App(Tk(), "LAB Thresholding", video_source=2)</code></pre>
+
+<p>video_source参数为摄像头ID。</p>
+
+<p>被取代是我的命运，我了解。。。</p>
+
+                
+
+</div>
+      </article>
+    </div>
+    <p class="back-link"><a href="article-5.html">返回<span data-menu-label="article-5.html" data-collection="collection-2">框架和库</span></a></p>
+  </main>
+  <footer>HPC2H2</footer>
+</body>
+</html>

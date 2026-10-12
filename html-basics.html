@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Web前端笔记|HTML5基础结构、标题与段落、图像与超链接 · HPC2H2</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="site.js?v=20261012-other" defer></script>
+</head>
+<body>
+  <header>
+    <div class="masthead">
+      <a class="site-name" href="index.html">HPC2H2</a>
+      <span class="site-description">技术博客</span>
+    </div>
+    <nav aria-label="合集导航" data-site-nav></nav>
+  </header>
+  <p class="breadcrumb"><a href="index.html">首页</a> &gt; <a href="index.html#collection-2" data-collection-name="collection-2">学习笔记</a> &gt; <a href="article-4.html"><span data-menu-label="article-4.html" data-collection="collection-2">编程语言与程序设计</span></a> &gt; Web前端笔记|HTML5基础结构、标题与段落、图像与超链接</p>
+  <main class="thread">
+    <div class="thread-heading"><h1>Web前端笔记|HTML5基础结构、标题与段落、图像与超链接</h1><a href="article-4.html">返回列表</a></div>
+    <div class="post">
+      <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
+      <article class="post-body imported-note" aria-label="Web前端笔记|HTML5基础结构、标题与段落、图像与超链接">
+        <p class="publish-date">发布时间：<time datetime="2023-05-16T20:11+08:00">2023-05-16 20:11</time> · <a href="https://www.cnblogs.com/HPC2H2/p/19504043" target="_blank" rel="noopener noreferrer">博客园原文</a></p>
+        <details class="article-toc"><summary>章节目录</summary><ul><li><a href="#post-section-0">HTM5的基础结构</a></li>
+<li><a href="#post-section-1">标题</a></li>
+<li><a href="#post-section-2">段落</a></li>
+<li><a href="#post-section-7">图像</a></li>
+<li><a href="#post-section-11">超链接</a></li></ul></details>
+        <div class="note-content"><h2 id="post-section-0">HTM5的基础结构</h2>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;!doctype html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;title&gt; 文件标题&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+文件内容
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<h2 id="post-section-1">标题</h2>
+<p>标题标签一共有6个，从&lt;h1&gt;标签到&lt;h6&gt;标签，字号依次变小。</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;h1 align="对齐方式"&gt;文本内容&lt;/h1&gt;</code></pre>
+<h2 id="post-section-2">段落</h2>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;p&gt;段落文字&lt;/p&gt;</code></pre>
+<p>&lt;p&gt;段落标签会自动在段落文字前后空行，因此两个相邻的&lt;p&gt;标签间空两行。在一个&lt;p&gt;标签内使用单标签&lt;br&gt;，可以实现换行。</p>
+<h3 id="post-section-3">文字装饰效果</h3>
+<h4 id="post-section-4">上标和下标</h4>
+<p>可用于实现方程式，例子如下：</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">上标：X&lt;sup&gt;3&lt;/sup&gt;+9X&lt;sup&gt;2&lt;/sup&gt;-3=0
+下标：3X&lt;sub&gt;1&lt;/sub&gt;+2X&lt;sub&gt;2&lt;/sub&gt;=10</code></pre>
+<h4 id="post-section-5">文字斜体、下划线与删除线</h4>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;em&gt;斜体文字&lt;/em&gt;
+&lt;u&gt;带下划线的文字&lt;/u&gt;
+&lt;del&gt;带删除线的文字&lt;/del&gt;</code></pre>
+<p>斜体字也可以用标签&lt;I&gt;或&lt;cite&gt;表示。</p>
+<h3 id="post-section-6">水平线</h3>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;hr&gt;</code></pre>
+<h2 id="post-section-7">图像</h2>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;img src="图像地址"&gt;</code></pre>
+<p>src可以是绝对地址，也可以是相对地址。</p>
+<p>若图像文件位于HTML文件的上一级目录中，用“../目录名/文件名”调用。</p>
+<h3 id="post-section-8">大小和边框</h3>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;img src="图像地址" height="" width=""&gt;
+&lt;img src="图像地址" border=""&gt;</code></pre>
+<p>height、width、border属性都可以省略，它们的单位是像素。border属性为图像边框的宽度，默认为0。</p>
+<h3 id="post-section-9">替换文本与提示文字</h3>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;img src="图像地址" alt="" title=""&gt;</code></pre>
+<p>鼠标悬停在图像上，显示的提示文字是title属性中的内容；alt属性中的内容为在图像无法显示的情况下显示的替换文本。</p>
+<h3 id="post-section-10">图像间距与对齐方式</h3>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;img src="图像地址" hspace="" vspace=""&gt;
+&lt;img src="图像地址" align="相对文字的对齐方式"&gt;</code></pre>
+<p>属性hspace和vspace调整图像与文字之间的距离。</p>
+<h2 id="post-section-11">超链接</h2>
+<h3 id="post-section-12">文本链接</h3>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;a href="" target=""&gt;&lt;/a&gt;</code></pre>
+<p>href:链接地址。target：打开新窗口的方式，主要有以下4个属性值：</p>
+<p>_blank:新建一个窗口打开；</p>
+<p>_parent：在上一级的窗口打开，常在分帧的框架页面中使用。</p>
+<p>_self：在同一窗口打开，默认值。</p>
+<p>_top：在浏览器的整个窗口打开，忽略所有框架结构。</p>
+<p>参考：<a href="https://blog.csdn.net/luoyin22/article/details/7543763" rel="noopener noreferrer" target="_blank">target属性里_blank _self _top _parent区别_luoyinbingfen2的博客-CSDN博客</a></p>
+<h3 id="post-section-13">书签链接</h3>
+<p> 指在同一页面进行位置的跳转。如href中传入"#top"，将跳转到页面的顶部。</p>
+<h3 id="post-section-14">图像超链接</h3>
+<p>单击图像，跳转到某界面。</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;a href="链接地址" target="目标窗口的打开方式"&gt;&lt;img src="图像文件的地址"&gt;&lt;/a&gt;</code></pre>
+<h3 id="post-section-15">图像热区链接</h3>
+<p>点击图像不同区域，跳转到不同界面。</p>
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-html">&lt;img src="图像地址" usemap="#映射图像名称"/&gt;
+&lt;map name="映射图像名称"&gt;
+        &lt;area shape="热区形状" coords="热区坐标" href="链接地址"/&gt;
+&lt;/map&gt;</code></pre>
+<p>&lt;area&gt;标签中，shape参数有"rect"、"circle"、"poly"可选，coords参数用来设置区域坐标。</p></div>
+      </article>
+    </div>
+    <p class="back-link"><a href="article-4.html">返回<span data-menu-label="article-4.html" data-collection="collection-2">编程语言与程序设计</span></a></p>
+  </main>
+  <footer>HPC2H2</footer>
+</body>
+</html>

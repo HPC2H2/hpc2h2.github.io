@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>蓝桥杯KMP总结 · HPC2H2</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="site.js?v=20261012-other" defer></script>
+</head>
+<body>
+  <header>
+    <div class="masthead">
+      <a class="site-name" href="index.html">HPC2H2</a>
+      <span class="site-description">技术博客</span>
+    </div>
+    <nav aria-label="合集导航" data-site-nav></nav>
+  </header>
+  <p class="breadcrumb"><a href="index.html">首页</a> &gt; <a href="index.html#collection-2" data-collection-name="collection-2">学习笔记</a> &gt; <a href="article-4.html"><span data-menu-label="article-4.html" data-collection="collection-2">编程语言与程序设计</span></a> &gt; 蓝桥杯KMP总结</p>
+  <main class="thread">
+    <div class="thread-heading"><h1>蓝桥杯KMP总结</h1><a href="article-4.html">返回列表</a></div>
+    <div class="post">
+      <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
+      <article class="post-body imported-note" aria-label="蓝桥杯KMP总结">
+        <p class="publish-date">发布时间：<time datetime="2023-05-28T17:22+08:00">2023-05-28 17:22</time> · <a href="https://www.cnblogs.com/HPC2H2/p/19504192" target="_blank" rel="noopener noreferrer">博客园原文</a></p>
+        <details class="article-toc"><summary>章节目录</summary><ul><li><a href="#post-section-0">原理详解</a></li><li><a href="#post-section-1">KMP题单</a></li><li><a href="#post-section-2">KMP题解</a></li><li><a href="#post-section-3">小蓝的字符串（模版题）</a></li></ul></details>
+        <div class="note-content">
+
+                    <p>本文给出了详解KMP原理的文章链接，以及蓝桥杯题单，并给出KMP模版题的题解。</p> 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+<h2 id="post-section-0">原理详解</h2> 
+<p><a target="_blank" rel="noopener noreferrer" href="https://www.cnblogs.com/SYCstudio/p/7194315.html">KMP算法（研究总结，字符串） - SYCstudio - 博客园 (cnblogs.com)</a></p> 
+<h2 id="post-section-1">KMP题单</h2> 
+<p>1203：小明的字符串</p> 
+<p>1628：最短循环节问题</p> 
+<p>1071：串的前缀</p> 
+<h2 id="post-section-2">KMP题解</h2> 
+<h3 id="post-section-3">小蓝的字符串（模版题）</h3> 
+<h4 id="post-section-4">题目描述</h4> 
+<p>小明有两个字符串，分别为 S,T。</p> 
+<p>请你求出 T 串的前缀在 S 串中出现的最长长度为多少。</p> 
+<h4 id="post-section-5">输入描述</h4> 
+<p>输入包含两行，每行包含一个字符串，分别表示 S,T。</p> 
+<p>1≤∣S∣,∣T∣≤10^6，保证 S,T 只包含小写字母。</p> 
+<h4 id="post-section-6">输出描述</h4> 
+<p>输出共 11 行，包含一个整数，表示答案。</p> 
+<h4 id="post-section-7">输入输出样例</h4> 
+<p>示例 1</p> 
+<blockquote> 
+ <p>输入</p> 
+</blockquote> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code>aabba
+abb
+</code></pre> 
+ 
+<blockquote> 
+ <p>输出</p> 
+</blockquote> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code>3
+</code></pre> 
+ 
+<p>示例 2</p> 
+<blockquote> 
+ <p>输入</p> 
+</blockquote> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code>aabba
+aba
+</code></pre> 
+ 
+<blockquote> 
+ <p>输出</p> 
+</blockquote> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code>2</code></pre> 
+<h4 id="post-section-8">求解方法一</h4> 
+<p>对每个T的前缀找S，暴力法（通过）。</p> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code class="language-python">s=input()
+t=input()
+ans=0
+for i in range(len(t),0,-1):
+    c=t[:i]
+    if s.find(c)!=-1:
+        ans=max(ans,i)
+print(ans)</code></pre> 
+<h4 id="post-section-9">求解方法二</h4> 
+<p>KMP。</p> 
+<pre tabindex="0" aria-label="代码，可横向滚动"><code class="language-python">N=100005
+ne=[0]*N
+
+def get_next(p):
+    for i in range(1,len(p)):
+        j=ne[i]
+        while j and p[j]!=p[i]:
+            j=ne[j]
+        if p[j]==p[i]:ne[i+1]=j+1
+        else:ne[i+1]=0
+
+def kmp(s,p):
+    ans=0
+    j=0
+    get_next(p)
+    for i in range(len(s)):
+        while j and p[j]!=s[i]:
+            j=ne[j]
+        if p[j]==s[i]:
+            j+=1
+            ans=max(ans,j)
+        if ans==len(p): return ans
+    return ans
+
+s=input()
+t=input()
+print(kmp(s,t))</code></pre> 
+
+                
+
+</div>
+      </article>
+    </div>
+    <p class="back-link"><a href="article-4.html">返回<span data-menu-label="article-4.html" data-collection="collection-2">编程语言与程序设计</span></a></p>
+  </main>
+  <footer>HPC2H2</footer>
+</body>
+</html>
