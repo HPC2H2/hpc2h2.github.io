@@ -1,0 +1,93 @@
+:root {
+  color-scheme: light;
+  font-family: Arial, "Microsoft YaHei", "SimSun", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #000;
+  background: #fff;
+}
+* { box-sizing: border-box; }
+body { width: min(980px, calc(100% - 40px)); margin: 22px auto; }
+a:link { color: #1d53bf; }
+a:visited { color: #551a8b; }
+a { text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible, button:focus-visible { outline: 2px solid #1d53bf; outline-offset: 3px; }
+.masthead { display: flex; align-items: baseline; gap: 18px; padding: 8px 2px 22px; }
+.site-name, .site-name:visited { color: #1d53bf; font: bold 32px/1.2 Arial, sans-serif; letter-spacing: -1px; }
+.site-description { font-size: 14px; }
+nav { background: #2b7acd; border: 1px solid #236abb; }
+.collections { display: flex; list-style: none; padding: 0; margin: 0; }
+.collection { position: relative; }
+.collection button { display: flex; align-items: center; gap: 10px; padding: 10px 25px; border: 0; border-right: 1px solid #5193d8; background: transparent; color: #fff; font: bold 14px/1.4 Arial, "Microsoft YaHei", sans-serif; cursor: pointer; }
+.collection:hover button, .collection:focus-within button { background: #005ab4; }
+.collection button:focus-visible { outline-color: #fff; outline-offset: -4px; }
+.arrow { border: 4px solid transparent; border-bottom: 0; border-top-color: currentColor; }
+.dropdown { display: none; position: absolute; z-index: 2; top: 100%; left: -1px; min-width: 130px; margin: 0; padding: 4px; list-style: none; border: 1px solid #a9bdd7; background: #fff; box-shadow: 1px 2px 3px #0002; }
+.collection:hover .dropdown, .collection:focus-within .dropdown { display: block; }
+.dropdown a, .dropdown a:visited { display: block; padding: 7px 14px; color: #1d53bf; white-space: nowrap; }
+.dropdown a:hover, .dropdown a:focus { background: #edf4fc; }
+#menu-1 { width: 280px; max-width: calc(100vw - 28px); }
+#menu-1 a { white-space: normal; overflow-wrap: anywhere; }
+.collection button { white-space: nowrap; }
+.breadcrumb { margin: 0; padding: 12px 2px; font-size: 12px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 16px; align-items: start; }
+.article-panel, .side-panel, .thread { border: 1px solid #ccc; }
+.panel-heading { display: flex; align-items: baseline; justify-content: space-between; padding: 13px 18px; }
+.panel-heading h1 { margin: 0; font-size: 18px; }
+.panel-heading > span { font-size: 12px; }
+.list-heading { display: flex; justify-content: space-between; padding: 7px 29px 7px 18px; border-block: 1px solid #ddd; background: #f5f5f5; font-size: 12px; }
+.article-list { list-style: none; margin: 0; padding: 0; }
+.article-row { display: grid; grid-template-columns: 94px minmax(0, 1fr) 65px; align-items: start; gap: 16px; padding: 18px 16px; border-bottom: 1px dotted #d9d9d9; scroll-margin-top: 16px; }
+.article-row:last-child { border-bottom: 0; }
+.article-row:hover { background: #f8fbff; }
+.collection-label { margin-top: 1px; padding: 2px 5px; border: 1px solid #d6dfed; background: #f1f5fb; text-align: center; font-size: 12px; white-space: nowrap; }
+.article-summary h2 { margin: 0 0 6px; font-size: 15px; font-weight: normal; }
+.article-summary p { margin: 0; font-size: 13px; }
+.row-author { padding-top: 3px; font-size: 12px; }
+.side-panel { margin-bottom: 16px; }
+.side-panel h2 { margin: 0; padding: 8px 13px; border-bottom: 1px solid #ddd; background: #f5f5f5; font-size: 14px; }
+.side-panel ul { list-style: none; margin: 0; padding: 6px 13px; }
+.side-panel li { display: flex; align-items: baseline; justify-content: space-between; padding: 7px 0; }
+.side-panel li span { font-size: 12px; }
+.side-panel p { margin: 13px; font-size: 13px; }
+.thread-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 13px 20px; border-bottom: 1px solid #ccc; background: #f5f5f5; }
+.thread-heading h1 { margin: 0; font-size: 18px; }
+.thread-heading a { font-size: 12px; white-space: nowrap; }
+.post { display: grid; grid-template-columns: 130px minmax(0, 1fr); min-height: 330px; }
+.post-author { padding: 26px 16px; background: #f7f9fc; border-right: 1px solid #e3e8f0; text-align: center; }
+.post-author strong { display: block; color: #1d53bf; font-size: 14px; }
+.post-author span { display: block; margin-top: 8px; font-size: 12px; }
+.post-body { padding: 25px 30px; font-size: 16px; line-height: 1.9; overflow-wrap: anywhere; }
+.post-body p { margin: 0 0 20px; }
+.post-body .publish-date { font-size: 12px; }
+.article-summary .publish-date { margin-top: 6px; font-size: 12px; }
+.post-body figure { margin: 28px 0; }
+.post-body figure img { display: block; max-width: 100%; height: auto; }
+.post-body figure a { display: block; width: fit-content; max-width: 100%; }
+.post-body figcaption { margin-top: 6px; font-size: 13px; }
+.back-link { margin: 0; padding: 12px 20px; border-top: 1px solid #ddd; text-align: right; font-size: 12px; }
+footer { margin-top: 24px; padding: 14px 0; border-top: 1px solid #ddd; text-align: center; font-size: 12px; }
+@media (max-width: 720px) {
+  body { width: calc(100% - 24px); margin: 12px auto; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .layout > aside { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .side-panel { margin: 0; }
+  .collection { flex: 1; }
+  .collection:first-child { flex: 1.8; }
+  .collection button { width: 100%; justify-content: center; padding: 11px 6px; gap: 7px; }
+  .collection:last-child .dropdown { left: auto; right: -1px; }
+  .post { grid-template-columns: 100px minmax(0, 1fr); }
+  .post-body { padding: 20px; }
+}
+@media (max-width: 440px) {
+  .article-row { grid-template-columns: minmax(0, 1fr); padding: 16px 12px; gap: 8px; }
+  .collection-label { justify-self: start; }
+  .collection button { font-size: 12px; gap: 5px; }
+  .thread-heading { align-items: flex-start; padding: 13px 16px; }
+  .row-author, .list-heading > span:last-child { display: none; }
+  .post { display: block; }
+  .post-author { display: flex; gap: 12px; align-items: baseline; padding: 10px 16px; border-right: 0; border-bottom: 1px solid #e3e8f0; text-align: left; }
+  .post-author span { margin: 0; }
+  .post-body { min-height: 280px; padding: 20px 16px; }
+}

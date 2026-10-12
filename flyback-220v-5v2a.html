@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>拆一个反激 220v交流转5V2A电源适配器 · HPC2H2</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="site.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="masthead">
+      <a class="site-name" href="index.html">HPC2H2</a>
+      <span class="site-description">技术博客</span>
+    </div>
+    <nav aria-label="合集导航" data-site-nav></nav>
+  </header>
+  <p class="breadcrumb"><a href="index.html">首页</a> &gt; <a href="index.html#collection-1" data-collection-name="collection-1"></a> &gt; 拆一个反激 220v交流转5V2A电源适配器</p>
+  <main class="thread">
+    <div class="thread-heading"><h1>拆一个反激 220v交流转5V2A电源适配器</h1><a href="index.html#collection-1">返回列表</a></div>
+    <div class="post">
+      <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
+      <article class="post-body" aria-label="拆一个反激 220v交流转5V2A电源适配器">
+        <p class="publish-date">发布时间：<time datetime="2026-10-12">2026年10月12日</time></p>
+        <p>拆一个反激 220v交流转5V2A电源适配器</p>
+        <p>为什么拓扑是反激？因为没有发现独立输出电感，还有U1这个SOP-8封装（并少一个脚）大概率是集成高压mosfet的开关电源控制芯片（如NCP10670B、DK935）。U1有大面积铜箔连着变压器原边绕组。</p>
+        <p>T1是隔离变压器，EE1608 4 + 2 骨架。</p>
+        <p>U2左边有3个脚连在一起，右边4个脚连在一起并连着背面的大面积铜箔，铜箔连着变压器副边绕组。U2是同步整流相关器件，SOP-8封装。</p>
+        <p>ABS10是桥式整流器。</p>
+        <p>如第四张图，从引脚定义来看U1可能是ZS2638。4脚CS是电流检测，7脚连着R3(0.75Ω)送回GND。4脚和7脚用万用表蜂鸣档测应该连通。</p>
+        <p>#开关电源 #反激 #flyback #硬件</p>
+        <figure id="figure-1">
+          <a href="images/flyback-adapter/01-front.jpg" target="_blank" rel="noopener" aria-label="查看图1 · 电路板正面原图"><img src="images/flyback-adapter/01-front.jpg" alt="图1 · 电路板正面" width="1706" height="1279"></a>
+          <figcaption>图1 · 电路板正面</figcaption>
+        </figure>
+        <figure id="figure-2">
+          <a href="images/flyback-adapter/02-back.jpg" target="_blank" rel="noopener" aria-label="查看图2 · 电路板背面原图"><img src="images/flyback-adapter/02-back.jpg" alt="图2 · 电路板背面" width="1706" height="1279"></a>
+          <figcaption>图2 · 电路板背面</figcaption>
+        </figure>
+        <figure id="figure-3">
+          <a href="images/flyback-adapter/03-label.jpg" target="_blank" rel="noopener" aria-label="查看图3 · 电源适配器铭牌原图"><img src="images/flyback-adapter/03-label.jpg" alt="图3 · 电源适配器铭牌" width="1706" height="1279"></a>
+          <figcaption>图3 · 电源适配器铭牌</figcaption>
+        </figure>
+        <figure id="figure-4">
+          <a href="images/flyback-adapter/04-pinout.png" target="_blank" rel="noopener" aria-label="查看图4 · ZS2638/9 引脚图原图"><img src="images/flyback-adapter/04-pinout.png" alt="图4 · ZS2638/9 引脚图" width="640" height="560"></a>
+          <figcaption>图4 · ZS2638/9 引脚图</figcaption>
+        </figure>
+      </article>
+    </div>
+    <p class="back-link"><a href="index.html#collection-1" data-collection-name="collection-1" data-prefix="返回"></a></p>
+  </main>
+  <footer>HPC2H2</footer>
+</body>
+</html>
