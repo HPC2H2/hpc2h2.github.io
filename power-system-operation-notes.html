@@ -1,0 +1,997 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>电力系统运行计算笔记：经济调度、机组组合、动态规划、低频减载与状态估计 · HPC2H2</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="site.js?v=20261012-other" defer></script>
+    <style>
+.ee505-note{line-height:1.65;overflow-wrap:normal}
+.ee505-note section{margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid #ccc}
+.ee505-note h2{font-size:22px;margin:0 0 18px;line-height:1.4}
+.ee505-note h3{font-size:17px;margin:24px 0 10px}
+.ee505-note p{margin:10px 0}
+.ee505-note .equation{font:18px/1.85 Cambria,"Times New Roman",serif;overflow-x:auto;white-space:nowrap;margin:14px 0;padding:4px 0}
+.ee505-note .table-wrap{overflow-x:auto;margin:16px 0;max-width:100%}
+.ee505-note table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.5;text-align:left}
+.ee505-note th,.ee505-note td{border:1px solid #bbb;padding:8px;vertical-align:top}
+.ee505-note .result{margin:22px 0}
+.ee505-note .matrix{display:inline-grid;grid-template-columns:repeat(var(--cols),2.5em);text-align:center;border-left:2px solid;border-right:2px solid;vertical-align:middle;padding:2px 7px;line-height:1.65}
+@media print{body{width:auto;margin:0}header,.breadcrumb,.post-author,.back-link,.thread-heading>a,footer{display:none}.thread{border:0}.thread-heading{background:none}.post{display:block}.post-body{padding:0}.ee505-note .equation{white-space:normal;font-size:11pt}.ee505-note .table-wrap{overflow:visible}.ee505-note table{font-size:9pt}tr,.result{break-inside:avoid}h2,h3{break-after:avoid}}
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="masthead"><a class="site-name" href="index.html">HPC2H2</a>
+      <span class="site-description">技术博客</span></div>
+      <nav aria-label="合集导航" data-site-nav></nav>
+    </header>
+    <p class="breadcrumb"><a href="index.html">首页</a> &gt; <a href="index.html#collection-2" data-collection-name="collection-2">学习笔记</a> &gt; <a href="other-notes.html"><span data-menu-label="other-notes.html" data-collection="collection-2">其他</span></a> &gt; 电力系统运行计算笔记</p>
+    <main class="thread">
+      <div class="thread-heading"><h1>电力系统运行计算笔记：经济调度、机组组合、动态规划、低频减载与状态估计</h1><a href="other-notes.html">返回列表</a></div>
+      <div class="post">
+        <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
+        <article class="post-body ee505-note" aria-label="电力系统运行计算笔记：经济调度、机组组合、动态规划、低频减载与状态估计">
+          <p class="publish-date">发布时间：<time datetime="2026-10-13">2026年10月13日</time></p>
+          <div lang="en">
+
+            <section id="economic-dispatch" class="problem">
+              <h2>1. Economic dispatch with output limits</h2>
+              <div class="question">
+
+                <h3>Question</h3>
+                <p>Three generators supply a total demand of <strong>850 MW</strong>. Neglect transmission losses. Determine the minimum-cost dispatch, the system incremental cost, and the total hourly production cost.</p>
+                <div class="table-wrap" tabindex="0">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Unit</th>
+                        <th scope="col">Output limits (MW)</th>
+                        <th scope="col">Cost C<sub>i</sub>(P<sub>i</sub>) ($/h)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>G1</td>
+                        <td>150 ≤ P₁ ≤ 600</td>
+                        <td>459 + 6.48P₁ + 0.00128P₁²</td>
+                      </tr>
+                      <tr>
+                        <td>G2</td>
+                        <td>100 ≤ P₂ ≤ 400</td>
+                        <td>310 + 7.85P₂ + 0.00194P₂²</td>
+                      </tr>
+                      <tr>
+                        <td>G3</td>
+                        <td>50 ≤ P₃ ≤ 200</td>
+                        <td>78 + 7.97P₃ + 0.00482P₃²</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="solution">
+
+                <h3>Solution</h3>
+                <div class="solution-body">
+
+                  <h3>1. Write the objective and the balance equation</h3>
+                  <div class="equation">
+                    Minimise C₁(P₁) + C₂(P₂) + C₃(P₃)<br>
+                    P₁ + P₂ + P₃ = 850 MW
+                  </div>
+                  <p>For a generator operating strictly inside its limits, its incremental cost equals λ. Differentiating removes the constant terms, but those terms must be included when calculating total cost.</p>
+                  <div class="equation">
+                    C′₁ = 6.48 + 0.00256P₁ = λ<br>
+                    C′₂ = 7.85 + 0.00388P₂ = λ<br>
+                    C′₃ = 7.97 + 0.00964P₃ = λ
+                  </div>
+
+                  <h3>2. Solve first without the output limits</h3>
+                  <div class="equation">
+                    (λ − 6.48)/0.00256 + (λ − 7.85)/0.00388<br>
+                    + (λ − 7.97)/0.00964 = 850<br>
+                    λ = 8.285176 $/MWh
+                  </div>
+                  <div class="table-wrap" tabindex="0">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">Unit</th>
+                          <th scope="col">Calculated output (MW)</th>
+                          <th scope="col">Check</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>G1</td>
+                          <td>705.1467</td>
+                          <td>Above 600 MW</td>
+                        </tr>
+                        <tr>
+                          <td>G2</td>
+                          <td>112.1587</td>
+                          <td>Within limits</td>
+                        </tr>
+                        <tr>
+                          <td>G3</td>
+                          <td>32.6946</td>
+                          <td>Below 50 MW</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <h3>3. Test the apparent boundary solution</h3>
+                  <p>Temporarily set P₁ = 600 MW and P₃ = 50 MW. Power balance gives P₂ = 200 MW. This is feasible, but it is not yet optimal.</p>
+                  <div class="equation">
+                    C′₁(600) = 6.48 + 0.00256 × 600 = 8.016<br>
+                    C′₂(200) = 7.85 + 0.00388 × 200 = 8.626<br>
+                    C′₃(50) = 7.97 + 0.00964 × 50 = 8.452
+                  </div>
+                  <p>G3 can supply the next MW more cheaply than G2. Increasing P₃ while reducing P₂ therefore reduces cost. Release G3 from its lower limit; keep G1 at its upper limit.</p>
+
+                  <h3>4. Redispatch G2 and G3</h3>
+                  <div class="equation">
+                    P₂ + P₃ = 850 − 600 = 250<br>
+                    7.85 + 0.00388P₂ = 7.97 + 0.00964P₃<br>
+                    0.00388P₂ − 0.00964(250 − P₂) = 0.12<br>
+                    0.01352P₂ = 2.53<br>
+                    P₂ = 187.130178 MW<br>
+                    P₃ = 250 − 187.130178 = 62.869822 MW<br>
+                    λ = 7.85 + 0.00388 × 187.130178<br>
+                    = 8.576065 $/MWh
+                  </div>
+
+                  <h3>5. Check optimality and calculate cost</h3>
+                  <p>G2 and G3 are within their limits and have equal incremental costs. G1 has C′₁ = 8.016 &lt; λ and is already at its maximum: the lower-cost unit cannot increase output further.</p>
+                  <div class="equation">
+                    C<sub>total</sub> = [459 + 6.48(600) + 0.00128(600)²]<br>
+                    + [310 + 7.85(187.130178) + 0.00194(187.130178)²]<br>
+                    + [78 + 7.97(62.869822) + 0.00482(62.869822)²]<br>
+                    = $7,252.83/h
+                  </div>
+                  <div class="result">
+                    <strong>Final answer</strong><p>P₁ = <b>600 MW</b>, P₂ = <b>187.130 MW</b>, P₃ = <b>62.870 MW</b>.<br>
+                    λ = <b>8.5761 $/MWh</b>; total cost = <b>$7,252.83/h</b>.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section id="unit-commitment" class="problem">
+              <h2>2. Unit commitment and shutdown decisions</h2>
+              <div class="question">
+
+                <h3>Question</h3>
+                <p>Use the following priority list to schedule four generating units over six one-hour periods. Priority 1 is the first unit to be committed. Where a unit can be taken out of service, compare banking (keeping it hot) with cooling and restarting.</p>
+                <div class="table-wrap" tabindex="0">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Unit / priority</th>
+                        <th scope="col">Rating (MW)</th>
+                        <th scope="col">Minimum down time (h)</th>
+                        <th scope="col">Banking ($/h)</th>
+                        <th scope="col">a (h⁻¹)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>G1 / 1</td>
+                        <td>600</td>
+                        <td>2.00</td>
+                        <td>1200</td>
+                        <td>0.30</td>
+                      </tr>
+                      <tr>
+                        <td>G2 / 2</td>
+                        <td>300</td>
+                        <td>1.25</td>
+                        <td>1400</td>
+                        <td>0.40</td>
+                      </tr>
+                      <tr>
+                        <td>G3 / 3</td>
+                        <td>300</td>
+                        <td>1.50</td>
+                        <td>800</td>
+                        <td>0.15</td>
+                      </tr>
+                      <tr>
+                        <td>G4 / 4</td>
+                        <td>200</td>
+                        <td>1.50</td>
+                        <td>800</td>
+                        <td>0.15</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="equation">Restart cost = 6,400(1 − e<sup>−at</sup>) dollars</div>
+                <div class="table-wrap" tabindex="0">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Hour</th>
+                        <th scope="col">1</th>
+                        <th scope="col">2</th>
+                        <th scope="col">3</th>
+                        <th scope="col">4</th>
+                        <th scope="col">5</th>
+                        <th scope="col">6</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Demand (MW)</td>
+                        <td>1300</td>
+                        <td>1100</td>
+                        <td>850</td>
+                        <td>580</td>
+                        <td>920</td>
+                        <td>1250</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p>Here t is the cooling duration in hours. Follow the lecture example: use the stated capacities, priority order, down times and costs; no additional reserve requirement is specified.</p>
+              </div>
+              <div class="solution">
+
+                <h3>Solution</h3>
+                <div class="solution-body">
+
+                  <h3>1. Build the cumulative-capacity list</h3>
+                  <div class="table-wrap" tabindex="0">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">Online units</th>
+                          <th scope="col">Maximum output (MW)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>G1</td>
+                          <td>600</td>
+                        </tr>
+                        <tr>
+                          <td>G1 + G2</td>
+                          <td>600 + 300 = 900</td>
+                        </tr>
+                        <tr>
+                          <td>G1 + G2 + G3</td>
+                          <td>900 + 300 = 1,200</td>
+                        </tr>
+                        <tr>
+                          <td>G1 + G2 + G3 + G4</td>
+                          <td>1,200 + 200 = 1,400</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <h3>2. Form a provisional schedule from demand</h3>
+                  <div class="table-wrap" tabindex="0">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">Hour</th>
+                          <th scope="col">Demand (MW)</th>
+                          <th scope="col">Capacity-only choice</th>
+                          <th scope="col">Reason</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>1</td>
+                          <td>1300</td>
+                          <td>G1 + G2 + G3 + G4</td>
+                          <td>1,200 &lt; 1,300 ≤ 1,400</td>
+                        </tr>
+                        <tr>
+                          <td>2</td>
+                          <td>1100</td>
+                          <td>G1 + G2 + G3</td>
+                          <td>900 &lt; 1,100 ≤ 1,200</td>
+                        </tr>
+                        <tr>
+                          <td>3</td>
+                          <td>850</td>
+                          <td>G1 + G2</td>
+                          <td>600 &lt; 850 ≤ 900</td>
+                        </tr>
+                        <tr>
+                          <td>4</td>
+                          <td>580</td>
+                          <td>G1</td>
+                          <td>580 ≤ 600</td>
+                        </tr>
+                        <tr>
+                          <td>5</td>
+                          <td>920</td>
+                          <td>G1 + G2 + G3</td>
+                          <td>900 &lt; 920 ≤ 1,200</td>
+                        </tr>
+                        <tr>
+                          <td>6</td>
+                          <td>1250</td>
+                          <td>G1 + G2 + G3 + G4</td>
+                          <td>1,200 &lt; 1,250 ≤ 1,400</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <h3>3. Check how long each unit would be off</h3>
+                  <ul>
+                    <li><strong>G4:</strong> not needed in hours 2–5. Available down time = 4 h ≥ 1.5 h; it may be taken out of service.</li>
+                    <li><strong>G3:</strong> not needed in hours 3–4. Available down time = 2 h ≥ 1.5 h; it may be taken out of service.</li>
+                    <li><strong>G2:</strong> not needed only in hour 4. Available down time = 1 h &lt; 1.25 h; <strong>keep G2 online in hour 4</strong>.</li>
+                  </ul>
+
+                  <h3>4. Compare banking and cooling costs</h3>
+                  <p><strong>G4: four-hour interval.</strong></p>
+                  <div class="equation">
+                    Banking = 800 × 4 = $3,200.00<br>
+                    Cooling/restart = 6,400(1 − e<sup>−0.15×4</sup>)<br>
+                    = 6,400(1 − 0.5488116) = $2,887.61<br>
+                    Saving by cooling = 3,200 − 2,887.61 = $312.39
+                  </div>
+                  <p>Cool G4 and restart it for hour 6.</p>
+                  <p><strong>G3: two-hour interval.</strong></p>
+                  <div class="equation">
+                    Banking = 800 × 2 = $1,600.00<br>
+                    Cooling/restart = 6,400(1 − e<sup>−0.15×2</sup>)<br>
+                    = 6,400(1 − 0.7408182) = $1,658.76<br>
+                    Saving by banking = 1,658.76 − 1,600 = $58.76
+                  </div>
+                  <p>Keep G3 banked for hours 3–4, then return it to generation for hour 5.</p>
+
+                  <h3>5. Write the final schedule</h3>
+                  <div class="table-wrap" tabindex="0">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">Hour</th>
+                          <th scope="col">Online and generating</th>
+                          <th scope="col">Other unit status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>1</td>
+                          <td>G1 + G2 + G3 + G4</td>
+                          <td>—</td>
+                        </tr>
+                        <tr>
+                          <td>2</td>
+                          <td>G1 + G2 + G3</td>
+                          <td>G4 cooling / off</td>
+                        </tr>
+                        <tr>
+                          <td>3</td>
+                          <td>G1 + G2</td>
+                          <td>G3 banked; G4 off</td>
+                        </tr>
+                        <tr>
+                          <td>4</td>
+                          <td>G1 + G2</td>
+                          <td>G3 banked; G4 off</td>
+                        </tr>
+                        <tr>
+                          <td>5</td>
+                          <td>G1 + G2 + G3</td>
+                          <td>G4 off</td>
+                        </tr>
+                        <tr>
+                          <td>6</td>
+                          <td>G1 + G2 + G3 + G4</td>
+                          <td>G4 restarted</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="result">
+                    <strong>Final answer</strong><p>Keep <b>G2 online throughout</b>. Bank <b>G3 for 2 h</b>. Cool <b>G4 for 4 h</b> and restart it for hour 6.<br>
+                    Cost of the two chosen layover strategies: $1,600 + $2,887.61 = <b>$4,487.61</b> (not the total generation cost).</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section id="dynamic-programming" class="problem">
+              <h2>3. Dynamic programming for unit commitment</h2>
+              <div class="question">
+
+                <h3>Question</h3>
+                <p>Each online unit must operate between half and full rated output. Initially G1 and G2 are online. There are no minimum up/down times. Use four one-hour periods, neglect shutdown costs and all other unlisted factors.</p>
+                <div class="table-wrap" tabindex="0">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Unit</th>
+                        <th scope="col">Rating (MW)</th>
+                        <th scope="col">Minimum (MW)</th>
+                        <th scope="col">Running cost ($/MWh)</th>
+                        <th scope="col">Startup ($)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>G1</td>
+                        <td>300</td>
+                        <td>150</td>
+                        <td>20</td>
+                        <td>2000</td>
+                      </tr>
+                      <tr>
+                        <td>G2</td>
+                        <td>200</td>
+                        <td>100</td>
+                        <td>25</td>
+                        <td>1800</td>
+                      </tr>
+                      <tr>
+                        <td>G3</td>
+                        <td>200</td>
+                        <td>100</td>
+                        <td>30</td>
+                        <td>1600</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="table-wrap" tabindex="0">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Hour</th>
+                        <th scope="col">1</th>
+                        <th scope="col">2</th>
+                        <th scope="col">3</th>
+                        <th scope="col">4</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Demand (MW)</td>
+                        <td>500</td>
+                        <td>600</td>
+                        <td>250</td>
+                        <td>450</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="solution">
+
+                <h3>Solution</h3>
+                <div class="solution-body">
+
+                  <h3>1. Define the states and reject infeasible ones</h3>
+                  <div class="table-wrap" tabindex="0">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">State</th>
+                          <th scope="col">Online units</th>
+                          <th scope="col">Total minimum (MW)</th>
+                          <th scope="col">Total maximum (MW)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>1</td>
+                          <td>G3</td>
+                          <td>100</td>
+                          <td>200</td>
+                        </tr>
+                        <tr>
+                          <td>2</td>
+                          <td>G2</td>
+                          <td>100</td>
+                          <td>200</td>
+                        </tr>
+                        <tr>
+                          <td>3</td>
+                          <td>G1</td>
+                          <td>150</td>
+                          <td>300</td>
+                        </tr>
+                        <tr>
+                          <td>4</td>
+                          <td>G2 + G3</td>
+                          <td>200</td>
+                          <td>400</td>
+                        </tr>
+                        <tr>
+                          <td>5</td>
+                          <td>G1 + G3</td>
+                          <td>250</td>
+                          <td>500</td>
+                        </tr>
+                        <tr>
+                          <td>6</td>
+                          <td>G1 + G2</td>
+                          <td>250</td>
+                          <td>500</td>
+                        </tr>
+                        <tr>
+                          <td>7</td>
+                          <td>G1 + G2 + G3</td>
+                          <td>350</td>
+                          <td>700</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p>A state is feasible only if its total minimum ≤ demand ≤ total maximum. Thus the feasible states are {5,6,7}, {7}, {3,4,5,6}, and {5,6,7} for hours 1–4, respectively.</p>
+
+                  <h3>2. Dispatch each feasible state</h3>
+                  <p>Start all online units at their minimum outputs, then allocate remaining demand in increasing running-cost order: G1, G2, G3. For example, at 600 MW with all units online, the dispatch is (300,200,100) MW and the hourly cost is 20×300 + 25×200 + 30×100 = $14,000.</p>
+                  <div class="table-wrap" tabindex="0">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">Hour</th>
+                          <th scope="col">State</th>
+                          <th scope="col">(P₁, P₂, P₃) MW</th>
+                          <th scope="col">Running cost for 1 h ($)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>1</td>
+                          <td>5</td>
+                          <td>(300, 0, 200)</td>
+                          <td>12,000</td>
+                        </tr>
+                        <tr>
+                          <td>1</td>
+                          <td>6</td>
+                          <td>(300, 200, 0)</td>
+                          <td>11,000</td>
+                        </tr>
+                        <tr>
+                          <td>1</td>
+                          <td>7</td>
+                          <td>(300, 100, 100)</td>
+                          <td>11,500</td>
+                        </tr>
+                        <tr>
+                          <td>2</td>
+                          <td>7</td>
+                          <td>(300, 200, 100)</td>
+                          <td>14,000</td>
+                        </tr>
+                        <tr>
+                          <td>3</td>
+                          <td>3</td>
+                          <td>(250, 0, 0)</td>
+                          <td>5,000</td>
+                        </tr>
+                        <tr>
+                          <td>3</td>
+                          <td>4</td>
+                          <td>(0, 150, 100)</td>
+                          <td>6,750</td>
+                        </tr>
+                        <tr>
+                          <td>3</td>
+                          <td>5</td>
+                          <td>(150, 0, 100)</td>
+                          <td>6,000</td>
+                        </tr>
+                        <tr>
+                          <td>3</td>
+                          <td>6</td>
+                          <td>(150, 100, 0)</td>
+                          <td>5,500</td>
+                        </tr>
+                        <tr>
+                          <td>4</td>
+                          <td>5</td>
+                          <td>(300, 0, 150)</td>
+                          <td>10,500</td>
+                        </tr>
+                        <tr>
+                          <td>4</td>
+                          <td>6</td>
+                          <td>(300, 150, 0)</td>
+                          <td>9,750</td>
+                        </tr>
+                        <tr>
+                          <td>4</td>
+                          <td>7</td>
+                          <td>(250, 100, 100)</td>
+                          <td>10,500</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <h3>3. Add only the required startup costs</h3>
+                  <div class="equation">
+                    F<sub>h</sub>(s) = C<sub>h</sub>(s) × 1 h<br>
+                    + min<sub>r</sub> [F<sub>h−1</sub>(r) + S(r,s)]<br>
+                    S(r,s) = sum of startup costs for units off in r but on in s
+                  </div>
+                  <p>Initial state: F₀(6) = 0. G1 and G2 are already online, so do not charge their startup costs at hour 1.</p>
+                  <div class="equation">
+                    F₁(5) = 12,000 + 1,600 = 13,600<br>
+                    F₁(6) = 11,000 + 0 = 11,000<br>
+                    F₁(7) = 11,500 + 1,600 = 13,100
+                  </div>
+
+                  <h3>4. Calculate hours 2 and 3</h3>
+                  <div class="equation">
+                    F₂(7) = 14,000 + min(13,600 + 1,800,<br>
+                    11,000 + 1,600, 13,100 + 0)<br>
+                    = 14,000 + 12,600 = 26,600; predecessor 6
+                  </div>
+                  <p>At hour 3, the previous state is 7, so every feasible state can be reached by shutting units down without a startup cost.</p>
+                  <div class="equation">
+                    F₃(3) = 26,600 + 5,000 = 31,600<br>
+                    F₃(4) = 26,600 + 6,750 = 33,350<br>
+                    F₃(5) = 26,600 + 6,000 = 32,600<br>
+                    F₃(6) = 26,600 + 5,500 = 32,100
+                  </div>
+
+                  <h3>5. Compare every hour-4 transition</h3>
+                  <p>Each entry is F₃(previous state) + startup cost + hour-4 running cost. This table includes all feasible predecessors, not just the path eventually selected.</p>
+                  <div class="table-wrap" tabindex="0">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">Previous state</th>
+                          <th scope="col">To state 5</th>
+                          <th scope="col">To state 6</th>
+                          <th scope="col">To state 7</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>3</td>
+                          <td>31,600 + 1,600 + 10,500 = 43,700</td>
+                          <td>31,600 + 1,800 + 9,750 = 43,150</td>
+                          <td>31,600 + 3,400 + 10,500 = 45,500</td>
+                        </tr>
+                        <tr>
+                          <td>4</td>
+                          <td>33,350 + 2,000 + 10,500 = 45,850</td>
+                          <td>33,350 + 2,000 + 9,750 = 45,100</td>
+                          <td>33,350 + 2,000 + 10,500 = 45,850</td>
+                        </tr>
+                        <tr>
+                          <td>5</td>
+                          <td>32,600 + 0 + 10,500 = 43,100</td>
+                          <td>32,600 + 1,800 + 9,750 = 44,150</td>
+                          <td>32,600 + 1,800 + 10,500 = 44,900</td>
+                        </tr>
+                        <tr>
+                          <td>6</td>
+                          <td>32,100 + 1,600 + 10,500 = 44,200</td>
+                          <td><b>32,100 + 0 + 9,750 = 41,850</b></td>
+                          <td>32,100 + 1,600 + 10,500 = 44,200</td>
+                        </tr>
+                        <tr>
+                          <td>Minimum</td>
+                          <td>43,100 (from 5)</td>
+                          <td><b>41,850 (from 6)</b></td>
+                          <td>44,200 (from 6)</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <h3>6. Backtrack and verify</h3>
+                  <div class="equation">
+                    Initial state 6 → hour 1: 6 → hour 2: 7<br>
+                    → hour 3: 6 → hour 4: 6<br>
+                    Total = 11,000 + (14,000 + 1,600)<br>
+                    + 5,500 + 9,750 = $41,850
+                  </div>
+                  <div class="result">
+                    <strong>Final answer</strong><p>Online units by hour: <b>{G1,G2} → {G1,G2,G3} → {G1,G2} → {G1,G2}</b>.<br>
+                    Only G3 is started, at hour 2. Minimum four-hour cost = <b>$41,850</b>.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section id="ufls" class="problem">
+              <h2>4. Under-frequency load shedding</h2>
+              <div class="question">
+
+                <h3>Question</h3>
+                <p>A 50 Hz system initially supplies 13,000 MW with 13,000 MW of generation capacity. At t = 0, it loses 3,000 MW of generation. Use H = 5 s and load-damping constant D = 1.0. Ignore relay delays and governor response in this example.</p>
+                <div class="table-wrap" tabindex="0">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">UFLS stage</th>
+                        <th scope="col">Threshold (Hz)</th>
+                        <th scope="col">Load shed (% of original load)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>1</td>
+                        <td>49.0</td>
+                        <td>3.077%</td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td>48.8</td>
+                        <td>10%</td>
+                      </tr>
+                      <tr>
+                        <td>3</td>
+                        <td>48.6</td>
+                        <td>10%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p>Find the frequency response without UFLS, the operating time of each UFLS stage, and the response after shedding.</p>
+              </div>
+              <div class="solution">
+
+                <h3>Solution</h3>
+                <div class="solution-body">
+
+                  <h3>1. Select the base and convert to per unit</h3>
+                  <div class="equation">
+                    S<sub>base</sub> = 13,000 − 3,000 = 10,000 MVA<br>
+                    ΔP<sub>m</sub> = −3,000 / 10,000 = −0.3 pu<br>
+                    P<sub>L0</sub> = 13,000 / 10,000 = 1.3 pu<br>
+                    D<sub>T</sub> = P<sub>L0</sub>D = 1.3<br>
+                    Δω = (f − 50)/50
+                  </div>
+                  <p>Generation loss is negative. Define q = −ΔP<sub>L</sub> &gt; 0 as the positive amount of load shed. Following the slides, 3.077% is rounded to 400 MW.</p>
+                  <div class="table-wrap" tabindex="0">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">Stage</th>
+                          <th scope="col">Load shed (MW)</th>
+                          <th scope="col">q (pu)</th>
+                          <th scope="col">Damping after stage</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>1</td>
+                          <td>0.03077 × 13,000 ≈ 400</td>
+                          <td>0.04</td>
+                          <td>(1.3 − 0.04) × 1 = 1.26</td>
+                        </tr>
+                        <tr>
+                          <td>2</td>
+                          <td>0.10 × 13,000 = 1,300</td>
+                          <td>0.13</td>
+                          <td>(1.3 − 0.04 − 0.13) × 1 = 1.13</td>
+                        </tr>
+                        <tr>
+                          <td>3</td>
+                          <td>0.10 × 13,000 = 1,300</td>
+                          <td>0.13</td>
+                          <td>(1.3 − 0.04 − 0.13 − 0.13) × 1 = 1.00</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <h3>2. Solve the response without UFLS</h3>
+                  <div class="equation">
+                    2H dΔω/dt + D<sub>T</sub>Δω = ΔP<sub>m</sub><br>
+                    10 dΔω/dt + 1.3Δω = −0.3<br>
+                    Δω(t) = (−0.3/1.3)(1 − e<sup>−0.13t</sup>)<br>
+                    f(t) = 50[1 − (0.3/1.3)(1 − e<sup>−0.13t</sup>)] Hz
+                  </div>
+                  <p>The initial rate of change and the mathematical steady value are:</p>
+                  <div class="equation">
+                    df/dt at t = 0 = 50(−0.3)/(2×5) = −1.5 Hz/s<br>
+                    f(∞) = 50(1 − 0.3/1.3) = 38.4615 Hz
+                  </div>
+
+                  <h3>3. Find the first threshold crossing</h3>
+                  <div class="equation">
+                    At 49 Hz: Δω₁ = (49 − 50)/50 = −0.020<br>
+                    −0.020 = (−0.3/1.3)(1 − e<sup>−0.13t₁</sup>)<br>
+                    e<sup>−0.13t₁</sup> = 1 − (1.3/−0.3)(−0.020)<br>
+                    = 0.913333333<br>
+                    t₁ = −ln(0.913333333)/0.13<br>
+                    = 0.697341 s ≈ 0.7 s
+                  </div>
+
+                  <h3>4. Follow the slide superposition method for stage 2</h3>
+                  <p>For this section, use the lecture’s adjusted-damping superposition: after each shedding event, evaluate all active event responses using the new damping value. Retain unrounded event times.</p>
+                  <div class="equation">
+                    Δω(t) = −(0.3/1.26)(1 − e<sup>−0.126t</sup>)<br>
+                    + (0.04/1.26)(1 − e<sup>−0.126(t−t₁)</sup>)
+                  </div>
+                  <p>To solve without trial-and-error, collect the exponential terms. Write Δω(t) = A + B e<sup>−kt</sup>.</p>
+                  <div class="equation">
+                    A = (−0.3 + 0.04)/1.26 = −0.206349206<br>
+                    B = [0.3 − 0.04e<sup>0.126×0.697341</sup>]/1.26<br>
+                    = 0.203433628<br>
+                    k = 1.26/10 = 0.126<br>
+                    Δω₂ = (48.8 − 50)/50 = −0.024<br>
+                    t₂ = −ln[(−0.024 − A)/B]/0.126<br>
+                    = 0.868383 s ≈ 0.9 s
+                  </div>
+
+                  <h3>5. Repeat for stage 3</h3>
+                  <div class="equation">
+                    Δω(t) = −(0.3/1.13)(1 − e<sup>−0.113t</sup>)<br>
+                    + (0.04/1.13)(1 − e<sup>−0.113(t−t₁)</sup>)<br>
+                    + (0.13/1.13)(1 − e<sup>−0.113(t−t₂)</sup>)<br>
+                    A = (−0.3 + 0.04 + 0.13)/1.13 = −0.115044248<br>
+                    B = [0.3 − 0.04e<sup>0.113×0.697341</sup><br>
+                    − 0.13e<sup>0.113×0.868383</sup>]/1.13<br>
+                    = 0.100280613<br>
+                    Δω₃ = (48.6 − 50)/50 = −0.028<br>
+                    t₃ = −ln[(−0.028 − A)/B]/0.113<br>
+                    = 1.252706 s ≈ 1.25 s
+                  </div>
+
+                  <h3>6. Write the response after the third stage</h3>
+                  <p>The damping becomes 1.0. The lecture-method expression for t &gt; t₃ is:</p>
+                  <div class="equation">
+                    Δω(t) = −0.3(1 − e<sup>−0.1t</sup>)<br>
+                    + 0.04(1 − e<sup>−0.1(t−t₁)</sup>)<br>
+                    + 0.13(1 − e<sup>−0.1(t−t₂)</sup>)<br>
+                    + 0.13(1 − e<sup>−0.1(t−t₃)</sup>)<br>
+                    f(t) = 50[1 + Δω(t)]<br>
+                    Δω(∞) = −0.3 + 0.04 + 0.13 + 0.13 = 0<br>
+                    f(∞) = 50 Hz
+                  </div>
+                  <div class="result">
+                    <strong>Final answer</strong><p>Using the slide method with unrounded intermediate times:<br>
+                    <b>t₁ = 0.69734 s, t₂ = 0.86838 s, t₃ = 1.25271 s</b>.<br>
+                    Total load shed ≈ <b>3,000 MW</b>; the model tends back to <b>50 Hz</b>.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section id="state-estimation" class="problem">
+              <h2>5. Least-squares state estimation</h2>
+              <div class="question">
+
+                <h3>Question</h3>
+                <p>Estimate the state x = [v₁, v₂, e]ᵀ of the DC circuit. Node 3 is the reference node (v₃ = 0). All three resistors are 1 Ω.</p>
+                <ul>
+                  <li>Branch 1→2 contains R₁ and a series source e, whose positive terminal faces node 1: i₁₂ = (v₁ − v₂ − e)/R₁.</li>
+                  <li>R₂ connects nodes 3 and 1; measured current i₃₁ is positive from node 3 to node 1.</li>
+                  <li>R₃ connects nodes 2 and 3; measured current i₂₃ is positive from node 2 to node 3.</li>
+                </ul>
+                <div class="table-wrap" tabindex="0">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Measurement</th>
+                        <th scope="col">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>i₁₂</td>
+                        <td>1.0 A</td>
+                      </tr>
+                      <tr>
+                        <td>i₃₁</td>
+                        <td>−3.2 A</td>
+                      </tr>
+                      <tr>
+                        <td>i₂₃</td>
+                        <td>0.8 A</td>
+                      </tr>
+                      <tr>
+                        <td>e</td>
+                        <td>1.1 V</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p>Treat all four measurements with equal numerical weights, as in the lecture example. Form the least-squares problem, estimate the three states, and calculate the residual vector.</p>
+              </div>
+              <div class="solution">
+
+                <h3>Solution</h3>
+                <div class="solution-body">
+
+                  <h3>1. Write one equation per measurement</h3>
+                  <div class="equation">
+                    v₁ − v₂ − e ≈ 1.0<br>
+                    −v₁ ≈ −3.2<br>
+                    v₂ ≈ 0.8<br>
+                    e ≈ 1.1
+                  </div>
+                  <p>If the last three measurements were exact, the first predicted current would be 3.2 − 0.8 − 1.1 = 1.3 A, not 1.0 A. The four measured equations are inconsistent, so minimise their squared residuals.</p>
+
+                  <h3>2. Assemble A, x and b</h3>
+                  <div class="equation">
+                    A = <span class="matrix" style="--cols:3"><span>1</span><span>−1</span><span>−1</span><span>−1</span><span>0</span><span>0</span><span>0</span><span>1</span><span>0</span><span>0</span><span>0</span><span>1</span></span><br>
+                    <br>
+                    x = [v₁, v₂, e]ᵀ<br>
+                    b = [1.0, −3.2, 0.8, 1.1]ᵀ<br>
+                    Ax ≈ b
+                  </div>
+
+                  <h3>3. Form the least-squares objective</h3>
+                  <div class="equation">
+                    r = b − Ax<br>
+                    J(x) = ½(b − Ax)ᵀ(b − Ax)<br>
+                    ∂J/∂x = −Aᵀ(b − Ax) = 0<br>
+                    AᵀA x̂ = Aᵀb
+                  </div>
+
+                  <h3>4. Calculate the normal-equation coefficients</h3>
+                  <div class="equation">
+                    AᵀA = <span class="matrix" style="--cols:3"><span>2</span><span>−1</span><span>−1</span><span>−1</span><span>2</span><span>1</span><span>−1</span><span>1</span><span>2</span></span><br>
+                    <br>
+                    Aᵀb = [1(1.0) + (−1)(−3.2),<br>
+                    　　　 (−1)(1.0) + 1(0.8),<br>
+                    　　　 (−1)(1.0) + 1(1.1)]ᵀ<br>
+                    　　 = [4.2, −0.2, 0.1]ᵀ
+                  </div>
+
+                  <h3>5. Solve the three simultaneous equations</h3>
+                  <div class="equation">
+                    2v₁ − v₂ − e = 4.2　　　　　 (1)<br>
+                    −v₁ + 2v₂ + e = −0.2　　　　(2)<br>
+                    −v₁ + v₂ + 2e = 0.1　　　　 (3)
+                  </div>
+                  <p>Add equations (1)+(2), add (1)+(3), then subtract (2) from (3):</p>
+                  <div class="equation">
+                    v₁ + v₂ = 4.0 → v₁ = 4.0 − v₂<br>
+                    v₁ + e = 4.3<br>
+                    e − v₂ = 0.3 → e = v₂ + 0.3
+                  </div>
+                  <p>Substitute v₁ = 4 − v₂ and e = v₂ + 0.3 into equation (2):</p>
+                  <div class="equation">
+                    −(4 − v₂) + 2v₂ + (v₂ + 0.3) = −0.2<br>
+                    4v₂ − 3.7 = −0.2<br>
+                    v₂ = 3.5/4 = 0.875 V<br>
+                    v₁ = 4 − 0.875 = 3.125 V<br>
+                    e = 0.875 + 0.3 = 1.175 V
+                  </div>
+
+                  <h3>6. Reconstruct the measurements and calculate residuals</h3>
+                  <div class="equation">
+                    A x̂ = [3.125 − 0.875 − 1.175,<br>
+                    　　　 −3.125, 0.875, 1.175]ᵀ<br>
+                    　　 = [1.075, −3.125, 0.875, 1.175]ᵀ<br>
+                    <br>
+                    r = b − A x̂<br>
+                    　= [1.0 − 1.075, −3.2 − (−3.125),<br>
+                    　　 0.8 − 0.875, 1.1 − 1.175]ᵀ<br>
+                    　= [−0.075, −0.075, −0.075, −0.075]ᵀ
+                  </div>
+                  <p>The first three residuals have units of amperes and the fourth has units of volts. The example assigns equal numerical weights to these measurement equations.</p>
+                  <div class="equation">
+                    J<sub>min</sub> = ½ × 4 × (0.075)² = 0.01125<br>
+                    Aᵀr = [0, 0, 0]ᵀ
+                  </div>
+                  <div class="result">
+                    <strong>Final answer</strong><p><b>v₁ = 3.125 V, v₂ = 0.875 V, e = 1.175 V.</b><br>
+                    The residuals are −0.075 A, −0.075 A, −0.075 A and −0.075 V, in the stated measurement order.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+          <p>题目来自 EE505 课程例题，本文仅整理解题过程。</p>
+        </article>
+      </div>
+      <p class="back-link"><a href="other-notes.html">返回其他</a></p>
+    </main>
+    <footer>HPC2H2</footer>
+  </body>
+</html>
