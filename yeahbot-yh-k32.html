@@ -4,8 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Yeahbot串口总线舵机常用指令表，基于6路舵机板（YH-K32控制板）的程序和设置 · HPC2H2</title>
+  <link rel="stylesheet" href="vendor/prism/prism.css">
   <link rel="stylesheet" href="style.css">
   <script src="site.js?v=20261012-other" defer></script>
+  <script src="vendor/prism/prism.js?v=1.30.0-languages" defer></script>
 </head>
 <body>
   <header>
@@ -65,7 +67,7 @@
 6. #000PBD1!<br/>
 解析：设置舵机通信波特率，默认 115200。数字参数对应关系为：1-9600，2-19200，3-38400， 4-57600，5-115200，6-128000，7-256000，8-1000000，该指令设置成功后返回#OK9600!</p>
 <h2 id="post-section-1">控制板示例程序</h2>
-<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-C">	/**********************************************
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-c">	/**********************************************
 	* @总线设备基本控制指令表：
 	*	1.	#000PID!						//读取ID指令
 	*	2.	#000PID001!						//设置ID指令
@@ -85,7 +87,7 @@
 	delay_ms(5000);
 	uart3_send_str((u8 *)"#001P1500T1000!");
 </code></pre>
-<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-C">/***********************************************
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-c">/***********************************************
 	函数名称:	uart3_send_str() 
 	功能介绍:	串口3发送字符串
 	函数参数:	*s 发送的字符串
@@ -115,7 +117,7 @@ void uart3_send_byte(u8 dat)
 }
 </code></pre>
 <h2 id="post-section-2">封装命令的函数</h2>
-<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-C">/**
+<pre aria-label="代码，可横向滚动" tabindex="0"><code class="language-c">/**
  * @函数描述: 设置舵机ID
  * @param broadcast_id: 广播ID(255)或现有舵机ID
  * @param new_id: 要设置的新ID(0-254)

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>C#基础1 · HPC2H2</title>
+  <link rel="stylesheet" href="vendor/prism/prism.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="site.js?v=20261012-other" defer></script>
+  <script src="vendor/prism/prism.js?v=1.30.0-languages" defer></script>
+</head>
+<body>
+  <header>
+    <div class="masthead">
+      <a class="site-name" href="index.html">HPC2H2</a>
+      <span class="site-description">技术博客</span>
+    </div>
+    <nav aria-label="合集导航" data-site-nav></nav>
+  </header>
+  <p class="breadcrumb"><a href="index.html">首页</a> &gt; <a href="index.html#collection-2" data-collection-name="collection-2">学习笔记</a> &gt; <a href="article-4.html"><span data-menu-label="article-4.html" data-collection="collection-2">编程语言与程序设计</span></a> &gt; C#基础1</p>
+  <main class="thread">
+    <div class="thread-heading"><h1>C#基础1</h1><a href="article-4.html">返回列表</a></div>
+    <div class="post">
+      <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
+      <article class="post-body imported-note" aria-label="C#基础1">
+        <p class="publish-date">发布时间：<time datetime="2026-10-14">2026年10月14日</time></p>
+        <pre aria-label="C# 代码，可横向滚动" tabindex="0"><code class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace MyProject
+{
+    class Program
+    {
+        /*
+         * 类的成员
+         * 1、变量（字段）
+         * 2、属性
+         * 3、方法
+         * **/
+
+        // 主方法（程序的入口）
+        // 配返回值类型：环境变量
+        static void Main(string[] args)
+        {
+            // F5 直接运行 F10 单步运行 F11 逐步运行
+            Console.WriteLine("Hello, Tell me something:"); // 打印输出
+            string message = Console.ReadLine(); // 接收用户输入
+            // 引用类型（存地址）、值类型（存值）
+            // int short2字节  double long float byte struct enum char bool(（1个字节）
+            // string object interface delegate class array
+            // 概念：使用变量类型的时候，思考哪种比较合适
+            // byte 0-255 IP地址用到
+            int num1 = 100; // 占用 4个字节 正负21亿
+            short num2 = 100; // 占用 2个字节 正负3万
+            double num3 = 3.14; // 占用 8个字节 正负 10^(19)
+            string name = "张三"; // 占用 4个字节 + 字符串长度 * 2
+            int age = 18; // 占用 4个字节
+            // 为什么要用数组？
+            Console.WriteLine(name + "的年龄是" + age);
+            Console.WriteLine($"{name}的年龄是{age}"); // 字符串插值
+            Console.WriteLine("你输入的内容是：" + message);
+
+            // 为什么要用数组？便于读取
+            // 数组定义：存放一组数据类型相同的值
+            // N个变量不便于数据维护（赋值和取值）
+            // 初始化赋值
+            // int[] ages = new int[3] { 18, 20, 22 }; // 定义一个长度为3的整型数组
+            string[] names = { "张三", "李四", "王五" }; //简写
+            // Java不能这样简写；Java写了大括号也不允许写数字；C# 括号只能写在变量前面类型后面
+            //string[] names = new string[] { "张三", "李四", "王五" }; // 定初始化几个值，就会默认分配几个空间
+            // cw 按一下 tab
+            for( int i = 0; i &lt; names.Length; i++)
+            {
+                // Console.WriteLine("循环到第"+(i+1)+"个："+names[i]); // names[i] 取值
+                //Console.WriteLine($"循环到第{i + 1}个：{names[i]}");
+                Console.WriteLine("循环到第{0}个：{1}", i + 1, names[i]); // 占位符
+            }
+
+            // foreach迭代循环 10000 foreach 执行效率 1/3 for循环时间
+            // 几千上万条能用foreach就用foreach
+            foreach (var item in names)
+            {
+                Console.WriteLine(item);
+            }
+
+            #region 9x9乘法表
+            for (int i = 1; i &lt;= 9; i++)
+            {
+                for (int j = 1; j &lt;= i; j++)
+                {
+                    Console.Write($"{j}x{i}={i * j}\t");
+                }
+                Console.WriteLine();
+            }
+            #endregion
+
+            #region 冒泡排序 概念：每次比较相邻的两个数，把大的数往后排
+            int[] ages = { 18, 20, 22, 15, 30, 25 };
+            int count = 0; // 统计比了几次
+            for (int i = 0; i &lt; ages.Length; i++)
+            {
+                for (int j = 0; j &lt; ages.Length - 1 - i; j++) // -i 优化，减少比较次数
+                {
+                    if (ages[j] &gt; ages[j + 1]) // 比较相邻的两个数
+                    {
+                        int temp = ages[j]; // 临时变量存储
+                        ages[j] = ages[j + 1]; // 交换位置
+                        ages[j + 1] = temp; // 交换位置
+                    }
+                    count++;
+                }
+            }
+
+            foreach (var item in ages) // var 弱类型（墙头草类型）
+            {
+                Console.WriteLine(item);
+            }
+            Console.Write("一共比较了{0}次", count);
+            #endregion
+        }
+    }
+}</code></pre>
+      </article>
+    </div>
+    <p class="back-link"><a href="article-4.html">返回<span data-menu-label="article-4.html" data-collection="collection-2">编程语言与程序设计</span></a></p>
+  </main>
+  <footer>HPC2H2</footer>
+</body>
+</html>
