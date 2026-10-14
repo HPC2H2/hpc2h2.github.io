@@ -1,9 +1,10 @@
-// 所有页面共用的导航。修改 name 更改合集名称；修改 items 更改下拉菜单。
+// 所有页面共用的导航。修改 name 更改合集名称；href 指向合集目录；items 配置下拉菜单。
 // label 是菜单文字，href 是要打开的页面。保存后刷新页面即可。
 const collections = [
   {
     "id": "collection-1",
     "name": "电子产品拆解",
+    "href": "collection-1.html",
     "items": [
       {
         "label": "拆一个反激 220v交流转5V2A电源适配器",
@@ -22,6 +23,7 @@ const collections = [
   {
     "id": "collection-2",
     "name": "学习笔记",
+    "href": "collection-2.html",
     "items": [
       {
         "label": "硬件与PCB",
@@ -56,6 +58,7 @@ const collections = [
   {
     "id": "collection-3",
     "name": "合集3",
+    "href": "collection-3.html",
     "items": [
       {
         "label": "选项1",
@@ -70,6 +73,7 @@ const collections = [
   {
     "id": "collection-4",
     "name": "合集4",
+    "href": "collection-4.html",
     "items": [
       {
         "label": "选项1",
@@ -96,12 +100,14 @@ for (const nav of document.querySelectorAll('[data-site-nav]')) {
   for (const collection of collections) {
     const item = element('li', 'collection');
     const menuId = collection.id.replace('collection-', 'menu-');
-    const button = element('button', '', collection.name);
-    button.type = 'button';
-    button.setAttribute('aria-controls', menuId);
+    const collectionLink = element('a', 'collection-link', collection.name);
+    collectionLink.href = collection.href;
+    if (collection.href === location.pathname.split('/').pop()) {
+      collectionLink.setAttribute('aria-current', 'page');
+    }
     const arrow = element('span', 'arrow');
     arrow.setAttribute('aria-hidden', 'true');
-    button.append(arrow);
+    collectionLink.append(arrow);
     const menu = element('ul', 'dropdown');
     menu.id = menuId;
     for (const entry of collection.items) {
@@ -111,7 +117,7 @@ for (const nav of document.querySelectorAll('[data-site-nav]')) {
       row.append(link);
       menu.append(row);
     }
-    item.append(button, menu);
+    item.append(collectionLink, menu);
     list.append(item);
   }
   nav.replaceChildren(list);
@@ -121,6 +127,12 @@ for (const nav of document.querySelectorAll('[data-site-nav]')) {
 for (const node of document.querySelectorAll('[data-collection-name]')) {
   const collection = collections.find(item => item.id === node.dataset.collectionName);
   if (collection) node.textContent = (node.dataset.prefix || '') + collection.name;
+  if (collection && node.matches('a')) {
+    node.href = collection.href;
+    if (collection.href === location.pathname.split('/').pop()) {
+      node.setAttribute('aria-current', 'page');
+    }
+  }
 }
 
 // 分类目录的侧栏与顶部导航使用同一份学习笔记菜单。

@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>C#基础2 · HPC2H2</title>
+  <link rel="stylesheet" href="vendor/prism/prism.css">
+  <link rel="stylesheet" href="style.css?v=20261014-collections">
+  <script src="site.js?v=20261014-collections" defer></script>
+  <script src="vendor/prism/prism.js?v=1.30.0-languages" defer></script>
+</head>
+<body>
+  <header>
+    <div class="masthead">
+      <a class="site-name" href="index.html">HPC2H2</a>
+      <span class="site-description">技术博客</span>
+    </div>
+    <nav aria-label="合集导航" data-site-nav></nav>
+  </header>
+  <p class="breadcrumb"><a href="index.html">首页</a> &gt; <a href="collection-2.html" data-collection-name="collection-2">学习笔记</a> &gt; <a href="article-4.html"><span data-menu-label="article-4.html" data-collection="collection-2">编程语言与程序设计</span></a> &gt; C#基础2</p>
+  <main class="thread">
+    <div class="thread-heading"><h1>C#基础2</h1><a href="article-4.html">返回列表</a></div>
+    <div class="post">
+      <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
+      <article class="post-body imported-note" aria-label="C#基础2">
+        <p class="publish-date">发布时间：<time datetime="2026-10-14T18:37+08:00">2026-10-14 18:37</time> · <a href="https://www.cnblogs.com/HPC2H2/p/23304815" target="_blank" rel="noopener noreferrer">博客园原文</a></p>
+        <details class="article-toc"><summary>章节目录</summary><ul><li><a href="#program">Program.cs</a></li><li><a href="#student">Student.cs</a></li><li><a href="#manager-form">ManagerForm.cs</a></li><li><a href="#product">Product.cs</a></li></ul></details>
+        <div class="note-content">
+<h2 id="program">Program.cs</h2>
+<pre aria-label="C# 代码，可横向滚动" tabindex="0"><code class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Ha
+{
+    /// &lt;summary&gt;
+    /// 类的访问修饰符省略默认是（internal）
+    /// &lt;/summary&gt;
+    class Program 
+    {
+        static void Main(string[] args)
+        {
+            //// 通过new实例化创建对象，在实例化的时候可以给对象的属性赋值
+            ////Student stu1 = new Student("张三", 18, '男');
+            //Student stu1 = new Student { Name = "张三", Age = 18, Gender = '男' };
+            //stu1.play("王者荣耀");
+            //Console.WriteLine($"姓名：{stu1.Name}，年龄：{stu1.Age}，性别：{stu1.Gender}");
+
+            //// 没初始化，字符串默认是空，数字默认是0
+            //Student stu2 = new Student();
+            //// stu2.Name = "李四";
+            ////stu2.Age = 22;
+            //stu2.Gender = '女';
+            //Console.WriteLine($"姓名：{stu2.Name}，年龄：{stu2.Age}，性别：{stu2.Gender}");
+
+            ManagerForm mf = new ManagerForm();
+            mf.Start();
+        }
+    }
+}
+</code></pre>
+<h2 id="student">Student.cs</h2>
+<pre aria-label="C# 代码，可横向滚动" tabindex="0"><code class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Ha
+{
+    /// &lt;summary&gt;
+    /// 类的访问修饰符省略默认是（internal）
+    /// &lt;/summary&gt;
+     class Student
+    {
+        /// &lt;summary&gt; 
+        /// 构造函数（名称和类名相同）
+        /// 如果不手动添加无参构造方法默认也有一个
+        /// 让用户手动添加一个构造方法时，原来的默认构造方法会销毁
+        /// &lt;/summary&gt;
+        // 方法重载
+        public Student()
+        {
+
+        }
+
+        public Student(string name, int age, char gender)
+        {
+            // 关键词 this 指向当前对象的引用
+            this.Name = name;
+            this.Age = age;
+            this.Gender = gender;
+        }
+        // 类的成员不写是private
+        #region 静态特征
+        /// &lt;summary&gt;
+        /// 姓名
+        /// &lt;/summary&gt;
+        public string Name;
+        /// &lt;summary&gt;
+        /// 年龄
+        /// &lt;/summary&gt;
+        public int Age;
+        /// &lt;summary&gt;
+        /// 性别
+        /// &lt;/summary&gt;
+        public char Gender;
+        #endregion
+
+        // public 公共的
+        // internal 项目内部访问
+        // internal protected 项目内部或子类可以访问
+        // protected 受保护的
+        // private 私有的
+
+        #region 动态特征
+        public void SetAge(int age)
+        {
+            if (age &gt;= 0 &amp;&amp; age &lt;= 150)
+            {
+                Age = age;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException("年龄必须在0到150之间");
+            }
+        }
+
+        public void study()
+        {
+            Console.WriteLine($"{Name}正在学习");
+        }
+
+        public void play(string game)
+        {
+            Console.WriteLine($"{Name}正在玩{game}");
+        }
+
+        #endregion
+    }
+}
+</code></pre>
+<h2 id="manager-form">ManagerForm.cs</h2>
+<pre aria-label="C# 代码，可横向滚动" tabindex="0"><code class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Ha
+{
+    public class ManagerForm
+    {
+        /// &lt;summary&gt;
+        /// 功能业务的入口
+        /// &lt;/summary&gt;
+        /// &lt;returns&gt;&lt;/returns&gt;
+        // 模拟数据库数据
+        public Product[]  GetData()
+        {
+            // 超出作用范围，GC垃圾回收
+            //GC.Collect(); // 手动触发垃圾回收
+            Product[] products = new Product[]
+            {
+                new Product { Name = "杯子", Price = 29.9, Love = 100, Position = "A1" },
+                new Product { Name = "热水器", Price = 399.9, Love = 200, Position = "B2" },
+                new Product { Name = "电饭煲", Price = 199.9, Love = 150, Position = "C3" }
+            };
+            // products[0] = new Product { Name = "杯子", Price = 29.9, Love = 100, Position = "A1" };
+            //string[] productNames = { "杯子", "热水器", "电饭煲" };
+            //double[] productPrices = { 29.9, 399.9, 199.9 };
+
+            return products;
+        }
+
+        public void Start()
+        {
+            Console.WriteLine("库存清单"); 
+            Product[] products = GetData();
+            foreach (Product p in products)
+            {
+                Console.WriteLine("产品名称：{0}", p.Name);
+            }
+            ShowMenu();
+        }
+
+        //private Product[] products; // 不建议，不一定一直用，但会一直占用内存
+        // 显示菜单
+        public void ShowMenu()
+        {
+            do
+            {
+                Console.WriteLine("请选择：1、获取物品位置 2、获取满意度最高的商品 3、退出");
+                int menuId = int.Parse(Console.ReadLine());
+                // Covert.ToINT32 效率低一点
+                switch (menuId)
+                {
+                    case 1:
+                        // 获取物品
+                        showProduct();
+                        break;
+                    case 2:
+                        // 获取满意度最高的商品
+                        GetTopOne();
+                        break;
+                    case 3:
+                        Environment.Exit(0); // 控制结束整个程序，控制台使用
+                        // return; // 结束当前方法
+                        break;
+                }
+            } while (true);
+
+        }
+
+        /// &lt;summary&gt;
+        /// 获取满意度最高的商品
+        /// &lt;/summary&gt;
+
+        public void GetTopOne()
+        {
+            Product[] products = GetData();
+            for (int i = 0; i &lt; products.Length - 1; i ++)
+            {
+                for (int j = 0; j &lt; products.Length - 1 - i; j++)
+                {
+                    if (products[j].Love &lt; products[j + 1].Love)
+                    {
+                        Product temp = products[j];
+                        products[j] = products[j + 1];
+                        products[j + 1] = temp;
+                    }
+                }
+            }
+            Console.WriteLine("名称:{0}，位置：{1}，人气：{2}，价格：{3}",
+                       products[0].Name, products[0].Position, products[0].Love, products[0].Price);
+        }
+        public void showProduct()
+        {
+            // 提示用户输入
+            Console.WriteLine("请输入产品名称"); // 学数据库后用编号去找
+            string productName = Console.ReadLine(); // 获取信息
+            Product[] products = GetData();
+            foreach (Product p in products)
+            {
+                if (p.Name.Equals(productName)) // 判断是否和用户输入一致
+                {
+                    Console.WriteLine("名称:{0}，位置：{1}，人气：{2}，价格：{3}",
+                        p.Name, p.Position, p.Love,p.Price);
+                    break; // 既然找到了商品，是不是应该终止？
+                }
+            }
+        }
+
+    }
+
+}
+</code></pre>
+<h2 id="product">Product.cs</h2>
+<pre aria-label="C# 代码，可横向滚动" tabindex="0"><code class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Ha
+{
+    public class Product
+    {
+        // 名称
+        public string Name;
+        // 价格
+        public double Price;
+        // 满意度
+        public int Love;
+        // 存放位置
+        public string Position;
+    }
+}
+</code></pre>
+<p>类的写法和超市管理系统。</p>
+        </div>
+      </article>
+    </div>
+    <p class="back-link"><a href="article-4.html">返回<span data-menu-label="article-4.html" data-collection="collection-2">编程语言与程序设计</span></a></p>
+  </main>
+  <footer>HPC2H2</footer>
+</body>
+</html>
