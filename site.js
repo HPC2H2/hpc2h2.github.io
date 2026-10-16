@@ -3,9 +3,13 @@
 const collections = [
   {
     "id": "collection-1",
-    "name": "电子产品拆解",
+    "name": "电子玩家",
     "href": "collection-1.html",
     "items": [
+      {
+        "label": "山水画摆件",
+        "href": "landscape-led-badge.html"
+      },
       {
         "label": "拆一个反激 220v交流转5V2A电源适配器",
         "href": "flyback-220v-5v2a.html"
