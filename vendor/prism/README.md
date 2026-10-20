@@ -20,3 +20,5 @@
 文章页面在 `style.css` 之前引入 `vendor/prism/prism.css`，再使用 `defer` 引入 `vendor/prism/prism.js?v=1.30.0-languages`。代码块使用 `<pre><code class="language-python">…</code></pre>`；C、C++、C# 分别使用 `language-c`、`language-cpp`、`language-csharp`。
 
 正文中的 `<` 和 `&` 应写成 `&lt;` 和 `&amp;`，以保持代码原文并避免被浏览器当作 HTML 解析。所有高亮资源均随网站本地提供。
+
+`prism-markup.js` 是同版本的官方未压缩 Markup 组件，供包含 XML 示例的文章按需加载。它应放在 `prism.js` 之后，同样使用 `defer`；XML 代码块使用 `language-xml`。源码：https://raw.githubusercontent.com/PrismJS/prism/v1.30.0/components/prism-markup.js

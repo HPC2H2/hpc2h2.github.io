@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>读 .NET 官方文档：七个设计要点与我的理解 · HPC2H2</title>
+  <meta name="description" content="结合串口通信和上位机开发，理解 .NET 的技术栈、安全代码、动态能力、原生互操作、跨平台、知识复用与开放生态。">
+  <link rel="stylesheet" href="vendor/prism/prism.css">
+  <link rel="stylesheet" href="style.css?v=20261014-collections">
+  <script src="site.js?v=20261016-electronics" defer></script>
+  <script src="vendor/prism/prism.js?v=1.30.0-languages" defer></script>
+  <script src="vendor/prism/prism-markup.js?v=1.30.0" defer></script>
+</head>
+<body>
+  <header>
+    <div class="masthead">
+      <a class="site-name" href="index.html">HPC2H2</a>
+      <span class="site-description">技术博客</span>
+    </div>
+    <nav aria-label="合集导航" data-site-nav></nav>
+  </header>
+  <p class="breadcrumb"><a href="index.html">首页</a> &gt; <a href="collection-2.html" data-collection-name="collection-2">学习笔记</a> &gt; <a href="article-5.html"><span data-menu-label="article-5.html" data-collection="collection-2">框架和库</span></a> &gt; .NET 设计要点</p>
+  <main class="thread">
+    <div class="thread-heading"><h1>读 .NET 官方文档：七个设计要点与我的理解</h1><a href="article-5.html">返回列表</a></div>
+    <div class="post">
+      <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
+      <article class="post-body imported-note" aria-label="读 .NET 官方文档：七个设计要点与我的理解">
+        <p class="publish-date">发布时间：<time datetime="2026-10-20">2026年10月20日</time></p>
+        <p>最近学习 C# 时，我读到了微软介绍 .NET 设计要点的文档。下面结合一些简单例子，记录我目前的理解。原文见 <a href="https://learn.microsoft.com/en-us/dotnet/core/introduction" target="_blank" rel="noopener noreferrer">Introduction to .NET</a>。</p>
+        <details class="article-toc" open>
+          <summary>本篇目录</summary>
+          <ul>
+            <li><a href="#productivity">1. 开发效率来自整个技术栈的配合</a></li>
+            <li><a href="#safe-code">2. 默认使用安全代码，也允许按需使用 unsafe</a></li>
+            <li><a href="#static-dynamic">3. 同时支持静态和动态能力</a></li>
+            <li><a href="#native-interop">4. 能够与原生代码协作，也提供访问 CPU 指令集的能力</a></li>
+            <li><a href="#portability">5. 支持跨平台，也允许针对特定平台开发</a></li>
+            <li><a href="#reuse">6. 基础编程能力可以在不同应用领域复用</a></li>
+            <li><a href="#ecosystem">7. 优先采用已有的行业标准和开放生态</a></li>
+          </ul>
+        </details>
+        <div class="note-content">
+          <section aria-labelledby="productivity">
+            <h2 id="productivity">1. 开发效率来自整个技术栈的配合</h2>
+            <p>.NET 将语言、运行时、类库和开发工具结合起来，帮助开发者完成从编写代码到调试、运行和部署的工作。</p>
+            <div class="imported-table-scroll" role="region" aria-label=".NET 技术栈组成，可横向滚动" tabindex="0">
+              <table>
+                <thead><tr><th scope="col">层次</th><th scope="col">典型组成</th></tr></thead>
+                <tbody>
+                  <tr><td>编程语言</td><td>C#、F#、Visual Basic</td></tr>
+                  <tr><td>运行时</td><td>负责代码执行、垃圾回收、即时编译等</td></tr>
+                  <tr><td>基础类库</td><td>集合、文件 IO、网络、并发等</td></tr>
+                  <tr><td>开发工具</td><td>Visual Studio、.NET CLI、调试器</td></tr>
+                  <tr><td>应用框架</td><td>ASP.NET Core、WPF、WinForms、.NET MAUI 等</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>例如，用 C# 编写串口调试程序时，可以使用 <code>SerialPort</code>。在现代 .NET 项目中，先添加 <code>System.IO.Ports</code> NuGet 包，再编写：</p>
+            <pre aria-label="C# 串口通信示例，可横向滚动" tabindex="0"><code class="language-csharp">using System.IO.Ports;
+
+// COM3 和波特率需要根据实际设备修改
+using var port = new SerialPort("COM3", 115200);
+port.Open();
+port.WriteLine("Hello STM32!");
+</code></pre>
+            <p>这样就不必自己封装底层串口 API，可以先关注发送什么数据、如何解析设备返回的信息。<a href="https://learn.microsoft.com/en-us/dotnet/api/system.io.ports.serialport" target="_blank" rel="noopener noreferrer">SerialPort 文档</a></p>
+            <p>当然，Qt 也提供了 <code>QSerialPort</code>。这里强调的是 .NET 各部分的配合，以及它们对开发工作的支持。</p>
+          </section>
+          <section aria-labelledby="safe-code">
+            <h2 id="safe-code">2. 默认使用安全代码，也允许按需使用 <code>unsafe</code></h2>
+            <p>日常 C# 开发通常使用托管代码，由运行时提供垃圾回收、数组边界检查等机制，减少直接管理内存时容易出现的问题。</p>
+            <p>如果需要使用指针，可以进入 <code>unsafe</code> 上下文。例如：</p>
+            <pre aria-label="C# 指针示例，可横向滚动" tabindex="0"><code class="language-csharp">unsafe
+{
+    int value = 100;
+    int* ptr = &amp;value;
+
+    *ptr = 200;
+    Console.WriteLine(value); // 输出 200
+}
+</code></pre>
+            <p>编译这段代码，还需要在项目文件的 <code>&lt;PropertyGroup&gt;</code> 中启用：</p>
+            <pre aria-label="XML 项目配置，可横向滚动" tabindex="0"><code class="language-xml">&lt;AllowUnsafeBlocks&gt;true&lt;/AllowUnsafeBlocks&gt;
+</code></pre>
+            <p>这个例子展示了通过指针修改变量。<a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/unsafe-code" target="_blank" rel="noopener noreferrer">unsafe 文档</a></p>
+          </section>
+          <section aria-labelledby="static-dynamic">
+            <h2 id="static-dynamic">3. 同时支持静态和动态能力</h2>
+            <p>这一点涉及的范围比较广。可以先从 C# 的静态类型检查和 <code>dynamic</code> 理解其中一个方面。</p>
+            <p>C# 是静态类型语言。下面的变量声明为 <code>int</code>，因此不能直接给它赋字符串值：</p>
+            <pre aria-label="C# 静态类型检查示例，可横向滚动" tabindex="0"><code class="language-csharp">int x = 10;
+x = "Hello"; // 编译错误
+</code></pre>
+            <p>如果使用 <code>dynamic</code>，下面的赋值可以正常执行：</p>
+            <pre aria-label="C# dynamic 示例，可横向滚动" tabindex="0"><code class="language-csharp">dynamic x = 10;
+x = "Hello";
+
+Console.WriteLine(x.Length); // 输出 5
+</code></pre>
+            <p><code>dynamic</code> 会将部分操作的绑定和检查推迟到运行时。如果实际对象不支持某个操作，执行时仍然可能发生异常，因此不能简单理解为“使用 <code>dynamic</code> 就不会报错”。<a href="https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/interop/using-type-dynamic" target="_blank" rel="noopener noreferrer">dynamic 文档</a></p>
+            <p>此外，.NET 还提供反射、运行时代码生成等能力，并支持 Native AOT 这样的提前编译部署方式。不同方式存在各自的限制，例如 Native AOT 不支持运行时代码生成，使用时需要检查兼容性。<a href="https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/" target="_blank" rel="noopener noreferrer">Native AOT 文档</a></p>
+          </section>
+          <section aria-labelledby="native-interop">
+            <h2 id="native-interop">4. 能够与原生代码协作，也提供访问 CPU 指令集的能力</h2>
+            <p>这一点可以拆成两部分理解。</p>
+            <p>第一部分是<strong>原生代码互操作</strong>。C# 程序可以通过相应接口调用已有的本机库，从而使用操作系统功能或其他语言实现的组件。<a href="https://learn.microsoft.com/en-us/dotnet/standard/native-interop/" target="_blank" rel="noopener noreferrer">原生互操作文档</a></p>
+            <p>结合上位机开发，可以设想这样的场景：设备厂商提供了相机、采集卡或运动控制卡的原生 SDK，上位机通过厂商提供的 .NET 封装，或通过 P/Invoke 等方式调用 SDK，完成设备控制和数据读取。</p>
+            <p>第二部分是<strong>硬件内建指令</strong>。例如，.NET 提供了访问 CPU 向量运算能力的接口，可用于部分计算密集场景的底层优化。这里涉及的是处理器指令集，例如 SIMD 向量运算。<a href="https://learn.microsoft.com/en-us/dotnet/api/system.runtime.intrinsics" target="_blank" rel="noopener noreferrer">硬件内建指令文档</a></p>
+          </section>
+          <section aria-labelledby="portability">
+            <h2 id="portability">5. 支持跨平台，也允许针对特定平台开发</h2>
+            <p>现代 .NET 支持 Windows、Linux、macOS，以及 x64、ARM64 等处理器架构。不过，具体应用能否跨平台，还取决于使用的框架、类库和系统接口。</p>
+            <p>例如，ASP.NET Core 应用可以部署到不同操作系统；WPF 和 WinForms 则用于 Windows 桌面应用。微软也明确说明，WPF 虽然属于现代 .NET 的组成部分，但仍然只能在 Windows 上运行。<a href="https://learn.microsoft.com/en-us/dotnet/desktop/wpf/overview/" target="_blank" rel="noopener noreferrer">WPF 文档</a></p>
+            <p>因此，选型时既要看 .NET 平台本身的能力，也要检查项目依赖的 UI 框架、设备驱动和厂商 SDK 是否支持目标平台。</p>
+          </section>
+          <section aria-labelledby="reuse">
+            <h2 id="reuse">6. 基础编程能力可以在不同应用领域复用</h2>
+            <p>.NET 面向不同应用领域提供了不同的框架，而 C# 语法、集合、异常处理和异步编程等基础知识，可以在多个领域继续使用。</p>
+            <div class="imported-table-scroll" role="region" aria-label=".NET 应用领域与典型技术，可横向滚动" tabindex="0">
+              <table>
+                <thead><tr><th scope="col">应用领域</th><th scope="col">典型技术或组合</th></tr></thead>
+                <tbody>
+                  <tr><td>Windows 桌面软件</td><td>WPF、WinForms</td></tr>
+                  <tr><td>Web 后端</td><td>ASP.NET Core</td></tr>
+                  <tr><td>移动应用</td><td>.NET MAUI</td></tr>
+                  <tr><td>游戏开发</td><td>Unity 使用 C#，但其运行时技术栈与现代 .NET 存在差异</td></tr>
+                  <tr><td>工业上位机</td><td>桌面框架、通信类库、设备 SDK</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>例如：</p>
+            <pre aria-label="C# 异步等待示例，可横向滚动" tabindex="0"><code class="language-csharp">await Task.Delay(1000);
+</code></pre>
+            <p>这表示异步等待一秒，等待期间不需要阻塞当前线程。</p>
+            <p><code>async</code> / <code>await</code> 可以用于桌面程序中的异步操作，也可以用于 Web 服务的异步 IO。</p>
+            <p>学习一种应用框架时积累的基础能力，往往可以带到其他领域；同时，每个领域仍有自己的框架用法和业务知识需要学习。</p>
+          </section>
+          <section aria-labelledby="ecosystem">
+            <h2 id="ecosystem">7. 优先采用已有的行业标准和开放生态</h2>
+            <p>.NET 的设计也强调与其他技术生态协作，例如支持 OpenTelemetry 和 gRPC。</p>
+            <p>OpenTelemetry 用于采集和传递日志、指标、调用链等观测数据，帮助开发者了解程序的运行情况。<a href="https://learn.microsoft.com/en-us/dotnet/core/diagnostics/observability-with-otel" target="_blank" rel="noopener noreferrer">OpenTelemetry 文档</a></p>
+            <p>gRPC 用于服务之间的远程调用，也支持不同语言实现的服务相互通信。<a href="https://learn.microsoft.com/en-us/aspnet/core/grpc/" target="_blank" rel="noopener noreferrer">gRPC 文档</a></p>
+            <p>采用这些通用技术，有助于 .NET 应用接入现有系统，也让开发者可以根据项目需要选择不同的服务、工具和基础设施。</p>
+          </section>
+        </div>
+      </article>
+    </div>
+    <p class="back-link"><a href="article-5.html">返回<span data-menu-label="article-5.html" data-collection="collection-2">框架和库</span></a></p>
+  </main>
+  <footer>HPC2H2</footer>
+</body>
+</html>
