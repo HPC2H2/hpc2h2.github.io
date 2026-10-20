@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>C#基础3：字符串类与静态方法 · HPC2H2</title>
+  <meta name="description" content="C# 字符串类与静态方法学习笔记，包含 Program.cs、Common.cs 和 Student.cs：类型转换、异常处理、扩展方法及属性封装。">
+  <link rel="stylesheet" href="vendor/prism/prism.css">
+  <link rel="stylesheet" href="style.css?v=20261014-collections">
+  <script src="site.js?v=20261016-electronics" defer></script>
+  <script src="vendor/prism/prism.js?v=1.30.0-languages" defer></script>
+</head>
+<body>
+  <header>
+    <div class="masthead">
+      <a class="site-name" href="index.html">HPC2H2</a>
+      <span class="site-description">技术博客</span>
+    </div>
+    <nav aria-label="合集导航" data-site-nav></nav>
+  </header>
+  <p class="breadcrumb"><a href="index.html">首页</a> &gt; <a href="collection-2.html" data-collection-name="collection-2">学习笔记</a> &gt; <a href="article-4.html"><span data-menu-label="article-4.html" data-collection="collection-2">编程语言与程序设计</span></a> &gt; C#基础3</p>
+  <main class="thread">
+    <div class="thread-heading"><h1>C#基础3：字符串类与静态方法</h1><a href="article-4.html">返回列表</a></div>
+    <div class="post">
+      <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
+      <article class="post-body imported-note" aria-label="C#基础3：字符串类与静态方法">
+        <p class="publish-date">发布时间：<time datetime="2026-10-20">2026年10月20日</time></p>
+        <p>本篇记录字符串类与静态方法的练习，包含类型转换、异常处理、扩展方法，以及字段和属性的封装。</p>
+        <details class="article-toc" open>
+          <summary>本篇目录</summary>
+          <ul>
+            <li><a href="#program">Program.cs · 字符串操作与静态成员</a></li>
+            <li><a href="#common">Common.cs · 静态类与扩展方法</a></li>
+            <li><a href="#student">Student.cs · 字段与属性封装</a></li>
+          </ul>
+        </details>
+        <div class="note-content">
+          <section aria-labelledby="program">
+            <h2 id="program">Program.cs · 字符串操作与静态成员</h2>
+            <p>主程序：练习静态成员访问、类型转换、异常处理，以及字符串的查找、截取、分割、拼接和替换。</p>
+            <pre aria-label="Program.cs C# 代码，可横向滚动" tabindex="0"><code class="language-csharp">namespace hello
+{
+    class Program
+    {
+        // C# vb 中间MSIL语言 即时编译
+        static int num = 123;
+        int num2 = 456;
+        const double PI = 3.14159; // 静态常量，值在编译时就确定了，不能在构造方法里赋值
+        // readonly double PI2 = 3.14159; // 动态常量，可以在构造方法里赋值
+
+        /// &lt;summary&gt;
+        /// 主方法
+        /// &lt;/summary&gt;
+        /// &lt;param name="args"&gt;&lt;/param&gt;
+        static void Main(string[] args)
+        {
+            // 静态的方法不能直接调用非静态成员
+            Program p = new Program();
+            p.num2 = 567;
+
+            Console.Write(PI);
+            Console.WriteLine("");
+            // 类型转换
+            // Convert
+            // 将字符串类型转换为指定类型
+            // int.Parse(); double.Parse(); bool.Parse(); DateTime.Parse();
+            // as 对象兼容类型转换，失败返回null
+            // is 对象类型判断，返回bool
+            // () 对象强制类型转换，失败抛异常
+            // 隐式转换
+
+            double num1 = 3.13; // 精度丢失
+            int num2 = (int)num1; // 显式转换
+            Console.WriteLine(num2);
+
+            double num3 = num2; // 隐式转换
+            Console.WriteLine(num3);
+            // 尽量避免转换
+
+            Console.WriteLine("请输入实岁:");
+            int age = int.Parse(Console.ReadLine());
+            // 字符串做拼接，数字做运算
+            Console.WriteLine($"您的虚岁是: {age + 1}");
+
+            object obj = "123abc"; // 用户很调皮，让他输入一个字符串，想要转换为数字
+            // int.TryParse(obj.ToString(), out int result);
+            // Console.WriteLine(result);
+
+            try
+            {
+                int result = Convert.ToInt32(obj);
+                Console.WriteLine(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("转换失败");
+                Console.WriteLine(ex.Message);
+            }
+
+            // 扩展方法
+            object obj2 = "123";
+            int str = obj2.ConvertToInt(); // obj2 是 this
+            Console.WriteLine(str);
+
+            // String 字符串类（字符串处理） 正则表达式爬虫
+            // IndexOf() 查找字符串位置
+            // Substring() 截取字符串
+            // Split() 分割字符串
+            // Replace() 替换字符串
+            // Trim() 去掉字符串两端空格
+            // ToUpper() 转大写
+            // ToLower() 转小写
+            // Equals() 比较字符串是否相等
+            // join() 拼接字符串
+
+            #region IndexOf LastIndexOf
+            string str1 = "hello world";
+            Console.WriteLine(str1.IndexOf(" ")); // 5
+            int index = str1.LastIndexOf("?"); // -1
+            if (str1.Contains("?"))
+            {
+                Console.WriteLine("?存在");
+            }
+            else
+            {
+                Console.WriteLine("?不存在");
+            }
+            if (index &gt;= 0)
+            {
+                Console.WriteLine("?存在");
+            }
+            else
+            {
+                Console.WriteLine("?不存在");
+            }
+            #endregion
+
+            #region Join Split
+            Console.Write("请输入QQ邮箱：");
+            string email = Console.ReadLine();
+            string qq = email.Substring(0, email.IndexOf('@'));
+            string domain = email.Substring(email.IndexOf('@') + 1);
+            Console.WriteLine(qq + "-" + domain);
+            string[] emailParts = email.Split("@"); // BS后端经常用到
+            //foreach (string item in emailParts)
+            //{
+            //    Console.WriteLine(item);
+            //}
+            string newStr = string.Join("$", emailParts);
+            Console.WriteLine(newStr);
+            #endregion
+
+            #region ToLower Equals Trim
+            Console.Write("请输入账号：");
+            string userName = Console.ReadLine();
+            Console.WriteLine($"字符长度：{userName.Length}");
+            if (userName.Trim().ToLower().Equals("admin")) // 字符串建议用Equals，判断值而不是地址
+            {
+                Console.WriteLine("欢迎管理员登录");
+            }
+            else
+            {
+                Console.WriteLine("欢迎用户登录");
+            }
+            #endregion
+
+            #region Replace
+            //JavaScript中 replace() 只能替换第一个，replaceAll() 替换所有
+            // C#中 replace() 替换所有
+            string names = "张三,李四,王五";
+            string newNames = names.Replace(",", "、");
+            Console.WriteLine(newNames);
+            #endregion
+
+            Student student = new Student();
+            student.Name = "张三"; // set
+            student.Age = -1; // 业务不合理
+        }
+    }
+}
+</code></pre>
+          </section>
+          <section aria-labelledby="common">
+            <h2 id="common">Common.cs · 静态类与扩展方法</h2>
+            <p>将类型转换封装为扩展方法，通过 obj2.ConvertToInt() 调用，并处理转换失败的情况。</p>
+            <pre aria-label="Common.cs C# 代码，可横向滚动" tabindex="0"><code class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace hello
+{
+    public static class Common
+    {
+        public static int ConvertToInt(this object obj)
+        {
+            int result = 0;
+            try
+            {
+                result = Convert.ToInt32(obj);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("转换失败");
+                Console.WriteLine(ex.Message);
+                return 0; // 返回默认值
+            }
+            return result;
+        }
+    }
+}
+</code></pre>
+          </section>
+          <section aria-labelledby="student">
+            <h2 id="student">Student.cs · 字段与属性封装</h2>
+            <p>通过 Name、Age 和自动属性练习 get / set，在 Age 的 set 中检查写入的值。</p>
+            <pre aria-label="Student.cs C# 代码，可横向滚动" tabindex="0"><code class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace hello
+{
+    /*
+     * 通用工具类
+     * 数据加密
+     * 类型转换
+     * 被static 标识的类 不允许new（实例化）
+     * Student stu = new Student();
+     * stu.study();
+     * **/
+
+    /*
+     * 当类的成员标识 static 成员属于类
+     * 反之属于对象
+     * **/
+
+    public class Student
+    {
+        // 属性的封装
+        // 隐藏内部细节，开放对外窗口
+        private string name; // 字段在类中，对内使用 默认不写就是私有的
+        // get读取权限 set写入权限
+        public string Name { get =&gt; name; set =&gt; name = value; }
+
+        // 老写法：
+        public string Name2
+        {
+            get { return name; }
+            set { this.name = value; }
+        }
+
+        // 字段一般小写私有，属性一般大写公开
+        // 字段没有权限，属性有读（get）和写（set）两种权限，可以选择开放部分功能
+        private int age;
+        public int Age
+        {
+            get { return age; }
+            set
+            {
+                if (value &lt;= 0) // 写入判断
+                    this.age = 0;
+                else
+                    this.age = value;
+            }
+        }
+
+        // getElementByID getElementByName 获取
+
+        // 实际开发
+        public string Gender { get; set; } // 自动属性封装
+        public int MyProperty { get; set; } // prop
+
+        public void study()
+        {
+            Name = "abc";
+            int stuNo = 10;
+            // static不能写在方法里面
+        }
+    }
+}
+</code></pre>
+          </section>
+        </div>
+      </article>
+    </div>
+    <p class="back-link"><a href="article-4.html">返回<span data-menu-label="article-4.html" data-collection="collection-2">编程语言与程序设计</span></a></p>
+  </main>
+  <footer>HPC2H2</footer>
+</body>
+</html>
