@@ -1,0 +1,43 @@
+---
+const { title, date, collection, collectionUrl, collectionId } = Astro.props.frontmatter;
+const [year, month, day] = date.split('-').map(Number);
+const displayDate = `${year}年${month}月${day}日`;
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{title} · HPC2H2</title>
+  <link rel="stylesheet" href="style.css?v=20261031-floating-cover">
+  <script src="site.js?v=20261031-local-links" defer></script>
+</head>
+<body>
+  <header>
+    <div class="masthead">
+      <a class="site-name" href="index.html">HPC2H2</a>
+      <span class="site-description">技术博客</span>
+    </div>
+    <nav aria-label="合集导航" data-site-nav></nav>
+  </header>
+  <p class="breadcrumb"><a href="index.html">首页</a> &gt; <a href={collectionUrl} data-collection-name={collectionId}>{collection}</a> &gt; {title}</p>
+  <main class="thread">
+    <div class="thread-heading"><h1>{title}</h1><a href={collectionUrl}>返回列表</a></div>
+    <div class="post">
+      <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
+      <article class="post-body markdown-post" aria-label={title}>
+        <p class="publish-date">发布时间：<time datetime={date}>{displayDate}</time></p>
+        <slot />
+      </article>
+    </div>
+    <p class="back-link"><a href={collectionUrl} data-collection-name={collectionId} data-prefix="返回">返回{collection}</a></p>
+  </main>
+  <footer>HPC2H2</footer>
+</body>
+</html>
+
+<style is:global>
+  .markdown-post p img { display: block; max-width: 100%; height: auto; }
+  .markdown-post p:has(img) { margin: 28px 0; }
+  .markdown-post img[src$="images/monthly-2026-10/local-team.jpg"] { width: 360px; }
+</style>

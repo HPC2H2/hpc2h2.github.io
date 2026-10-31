@@ -1,0 +1,16 @@
+{
+  "name": "hpc2h2-blog",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && node scripts/relative-image-paths.mjs",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^7.4.4"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
