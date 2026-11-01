@@ -1,7 +1,10 @@
 ---
-const { title, date, collection, collectionUrl, collectionId } = Astro.props.frontmatter;
+const { title, date, updated, collection, collectionUrl, collectionId } = Astro.props.frontmatter;
 const [year, month, day] = date.split('-').map(Number);
 const displayDate = `${year}年${month}月${day}日`;
+const displayUpdated = updated
+  ? updated.split('-').map(Number).map((value, index) => `${value}${['年', '月', '日'][index]}`).join('')
+  : undefined;
 ---
 <!doctype html>
 <html lang="zh-CN">
@@ -27,6 +30,7 @@ const displayDate = `${year}年${month}月${day}日`;
       <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
       <article class="post-body markdown-post" aria-label={title}>
         <p class="publish-date">发布时间：<time datetime={date}>{displayDate}</time></p>
+        {updated && <p class="publish-date">修改日期：<time datetime={updated}>{displayUpdated}</time></p>}
         <slot />
       </article>
     </div>
