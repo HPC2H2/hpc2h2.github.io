@@ -84,3 +84,7 @@ npm run preview
 - 旧文章正文继续在原 HTML 中维护。已有文章正文 URL 保留；`article-6.html` 用于“电子世界 → 嵌入式软件”，`other-notes.html` 作为旧目录仍然可访问。
 
 现有占位“示例文章”保留原文件，正式首页和新分类目录不计入它们。当前月刊为《2026年10月》。
+
+## 外观
+
+当前采用“克制冰蓝”主题，公共样式为 `public/style.css`。`--content-opacity` 控制阅读区域底色，`--nav-opacity` 控制导航底色；正文使用深色、日期使用灰色，冰蓝玻璃质感集中在页面外框和导航。首页简介在 `scripts/build-catalog.mjs` 的 `home-intro` 中修改。
