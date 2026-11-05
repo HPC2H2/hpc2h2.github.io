@@ -1,0 +1,296 @@
+// 由 scripts/build-catalog.mjs 根据 src/data/catalog.json 自动生成。
+window.siteCatalog = {
+  "sections": [
+    {
+      "id": "collection-1",
+      "name": "电子世界",
+      "href": "collection-1.html",
+      "items": [
+        {
+          "label": "电子玩家",
+          "href": "electronics-player.html"
+        },
+        {
+          "label": "硬件学习",
+          "href": "hardware-learning.html"
+        },
+        {
+          "label": "嵌入式软件",
+          "href": "article-6.html"
+        },
+        {
+          "label": "作品集",
+          "href": "portfolio.html"
+        },
+        {
+          "label": "电源PCB",
+          "href": "power-pcb.html"
+        },
+        {
+          "label": "高速PCB",
+          "href": "high-speed-pcb.html"
+        },
+        {
+          "label": "常规PCB",
+          "href": "general-pcb.html"
+        }
+      ]
+    },
+    {
+      "id": "collection-2",
+      "name": "电气与控制",
+      "href": "collection-2.html",
+      "items": [
+        {
+          "label": "电机控制",
+          "href": "motor-control.html"
+        },
+        {
+          "label": "电力系统运行与控制",
+          "href": "power-system-control.html"
+        },
+        {
+          "label": "机电控制",
+          "href": "mechatronic-control.html"
+        },
+        {
+          "label": "电力电子控制",
+          "href": "power-electronics-control.html"
+        },
+        {
+          "label": "继电保护",
+          "href": "relay-protection.html"
+        }
+      ]
+    },
+    {
+      "id": "collection-3",
+      "name": "程序设计",
+      "href": "collection-3.html",
+      "items": [
+        {
+          "label": "编程语言",
+          "href": "article-4.html"
+        },
+        {
+          "label": "框架与库",
+          "href": "article-5.html"
+        },
+        {
+          "label": "软件工程",
+          "href": "software-engineering.html"
+        },
+        {
+          "label": "数据结构和算法",
+          "href": "algorithms.html"
+        },
+        {
+          "label": "行业内知识",
+          "href": "industry-knowledge.html"
+        }
+      ]
+    },
+    {
+      "id": "collection-5",
+      "name": "杂谈杂学",
+      "href": "collection-5.html",
+      "items": [
+        {
+          "label": "编曲手记",
+          "href": "arranging-notes.html"
+        },
+        {
+          "label": "英语进阶",
+          "href": "english-learning.html"
+        },
+        {
+          "label": "日语札记",
+          "href": "japanese-notes.html"
+        },
+        {
+          "label": "粤语拾遗",
+          "href": "cantonese-notes.html"
+        },
+        {
+          "label": "强身指南",
+          "href": "fitness-guide.html"
+        }
+      ]
+    },
+    {
+      "id": "collection-4",
+      "name": "每月好事情",
+      "href": "collection-4.html",
+      "items": [
+        {
+          "label": "2026年10月",
+          "href": "monthly-2026-10.html"
+        }
+      ]
+    }
+  ],
+  "posts": [
+    {
+      "href": "monthly-2026-10.html",
+      "title": "2026年10月",
+      "summary": "简单总结下这个月干了些啥好事情。",
+      "section": "collection-4",
+      "category": null,
+      "date": "2026-10-31",
+      "dateLabel": "2026年10月31日"
+    },
+    {
+      "href": "landscape-led-badge.html",
+      "title": "山水画摆件",
+      "summary": "今天用LED胸牌也做了一个山水摆件，chill。",
+      "section": "collection-1",
+      "category": "electronics-player.html",
+      "date": "2026-10-16",
+      "dateLabel": "2026年10月16日"
+    },
+    {
+      "href": "flyback-220v-5v2a.html",
+      "title": "拆一个反激 220v交流转5V2A电源适配器",
+      "summary": "为什么拓扑是反激？",
+      "section": "collection-1",
+      "category": "electronics-player.html",
+      "date": "2026-10-12",
+      "dateLabel": "2026年10月12日"
+    },
+    {
+      "href": "dotnet-design-notes.html",
+      "title": "读 .NET 官方文档：七个设计要点与我的理解",
+      "summary": "结合串口通信和上位机开发，理解 .NET 的技术栈、安全代码、动态能力、原生互操作与跨平台设计。",
+      "section": "collection-3",
+      "category": "article-5.html",
+      "date": "2026-10-20",
+      "dateLabel": "2026年10月20日"
+    },
+    {
+      "href": "csharp-basics-3.html",
+      "title": "C#基础3：字符串类与静态方法",
+      "summary": "C# 字符串常用方法、静态成员、类型转换与异常处理、扩展方法和属性封装。",
+      "section": "collection-3",
+      "category": "article-4.html",
+      "date": "2026-10-20",
+      "dateLabel": "2026年10月20日"
+    },
+    {
+      "href": "csharp-basics-2.html",
+      "title": "C#基础2",
+      "summary": "C# 类与对象、构造函数、访问修饰符，以及超市商品查询和排序示例。",
+      "section": "collection-3",
+      "category": "article-4.html",
+      "date": "2026-10-14T18:37+08:00",
+      "dateLabel": "2026-10-14 18:37"
+    },
+    {
+      "href": "csharp-basics-1.html",
+      "title": "C#基础1",
+      "summary": "C# 控制台输入输出、变量与数组、循环、九九乘法表和冒泡排序示例。",
+      "section": "collection-3",
+      "category": "article-4.html",
+      "date": "2026-10-14",
+      "dateLabel": "2026年10月14日"
+    },
+    {
+      "href": "html-basics.html",
+      "title": "Web前端笔记|HTML5基础结构、标题与段落、图像与超链接",
+      "summary": "HTML5 文档结构、标题段落、文字样式、图像与超链接的基础笔记。",
+      "section": "collection-3",
+      "category": "article-4.html",
+      "date": "2023-05-16T20:11+08:00",
+      "dateLabel": "2023-05-16 20:11"
+    },
+    {
+      "href": "html-tables-forms.html",
+      "title": "Web前端笔记|表格、＜div＞标签、＜span＞标签、列表、表单",
+      "summary": "HTML 表格、div、span、列表与表单的基础用法和代码示例。",
+      "section": "collection-3",
+      "category": "article-4.html",
+      "date": "2023-05-30T15:35+08:00",
+      "dateLabel": "2023-05-30 15:35"
+    },
+    {
+      "href": "yeahbot-yh-k32.html",
+      "title": "Yeahbot串口总线舵机常用指令表，基于6路舵机板（YH-K32控制板）的程序和设置",
+      "summary": "Yeahbot 总线舵机常用指令、串口控制代码，以及 YH-K32 板载资源和 FlyMCU 烧写配置。",
+      "section": "collection-1",
+      "category": "article-6.html",
+      "date": "2026-03-23T14:48+08:00",
+      "dateLabel": "2026-03-23 14:48"
+    },
+    {
+      "href": "opencv-lab-threshold.html",
+      "title": "gpt4实现对摄像头帧缓冲区图像的LAB阈值选择界面（python-opencv)",
+      "summary": "用 Python、OpenCV 和 Tkinter 调整摄像头画面的 LAB 阈值，附界面和代码。",
+      "section": "collection-3",
+      "category": "article-5.html",
+      "date": "2023-07-05T21:20+08:00",
+      "dateLabel": "2023-07-05 21:20"
+    },
+    {
+      "href": "kmp-notes.html",
+      "title": "蓝桥杯KMP总结",
+      "summary": "KMP 字符串匹配的参考资料、蓝桥杯题目和代码。",
+      "section": "collection-3",
+      "category": "algorithms.html",
+      "date": "2023-05-28T17:22+08:00",
+      "dateLabel": "2023-05-28 17:22"
+    },
+    {
+      "href": "python-gc-notes.html",
+      "title": "gpt4写Python“gc”模块文档，答使用del后变量是否被回收，Python3“gc”模块与Micropython里“gc”模块对比",
+      "summary": "Python gc 模块、del 与对象回收，以及 Python 和 MicroPython 的 gc 模块对比。",
+      "section": "collection-3",
+      "category": "article-4.html",
+      "date": "2023-07-01T21:24+08:00",
+      "dateLabel": "2023-07-01 21:24"
+    },
+    {
+      "href": "stm32-dma-can-zigbee.html",
+      "title": "STM32F103双机通信：基于ReceiveToIdle DMA、CAN与ZigBee的无阻塞数据转发桥接",
+      "summary": "STM32F103 双机通信的 ReceiveToIdle DMA、CAN 与 ZigBee 配置和代码。",
+      "section": "collection-1",
+      "category": "article-6.html",
+      "date": "2025-11-07T15:48+08:00",
+      "dateLabel": "2025-11-07 15:48"
+    },
+    {
+      "href": "zigbee-dl22.html",
+      "title": "【无线传输串口数据】ZigBee收发器DL-22用法",
+      "summary": "DL-22 模块说明书、串口接线，以及波特率、频道和点对点通信设置。",
+      "section": "collection-1",
+      "category": "article-6.html",
+      "date": "2025-11-02T10:25+08:00",
+      "dateLabel": "2025-11-02 10:25"
+    },
+    {
+      "href": "binary-search-notes.html",
+      "title": "蓝桥三十一天刷题（python组）||二分法总结",
+      "summary": "整数二分与实数二分的 Python 模板，以及求阶乘、最少刷题数和一元三次方程题解。",
+      "section": "collection-3",
+      "category": "algorithms.html",
+      "date": "2023-03-18T12:08+08:00",
+      "dateLabel": "2023-03-18 12:08"
+    },
+    {
+      "href": "power-system-operation-notes.html",
+      "title": "电力系统运行计算笔记：经济调度、机组组合、动态规划、低频减载与状态估计",
+      "summary": "五道电力系统运行计算例题及解题步骤。",
+      "section": "collection-2",
+      "category": "power-system-control.html",
+      "date": "2026-10-13",
+      "dateLabel": "2026年10月13日"
+    },
+    {
+      "href": "quant-timing-notes.html",
+      "title": "量化择时策略入门与实操-笔记（同花顺金融量化实验室python实现）",
+      "summary": "指数估值择时、指数轮动与风险平价仓位管理的课程笔记，附 Python 代码。",
+      "section": "collection-3",
+      "category": "industry-knowledge.html",
+      "date": "2022-10-28T17:39+08:00",
+      "dateLabel": "2022-10-28 17:39"
+    }
+  ]
+};

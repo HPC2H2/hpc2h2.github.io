@@ -3,7 +3,7 @@ layout: ../layouts/Article.astro
 title: "2026年10月"
 date: "2026-10-31"
 updated: "2026-11-01"
-collection: "月刊"
+collection: "每月好事情"
 collectionUrl: "collection-4.html"
 collectionId: "collection-4"
 ---

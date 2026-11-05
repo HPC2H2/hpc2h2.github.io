@@ -314,3 +314,18 @@ footer { margin-top: 22px; padding: 15px 0 18px; border-top: 1px solid rgb(var(-
   .article-row:hover,
   .article-row:focus-within { transform: none; }
 }
+
+/* 五个栏目等宽排列，窄屏分成两行，完整保留栏目名称。 */
+.collections { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.collection > .collection-link { padding-inline: 12px; }
+.collection:last-child .dropdown { left: auto; right: -1px; }
+.collection > .collection-link.is-active { box-shadow: inset 0 0 0 1px #ffffffb3; }
+.collection > .collection-link.is-active::before { opacity: 1; }
+.dropdown a[aria-current="page"], .dropdown a.is-active { font-weight: 600; background-color: rgb(var(--blue-rgb) / .10); }
+@media (max-width: 720px) {
+  .collections { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .collection > .collection-link { padding-inline: 6px; }
+  .collection:last-child .dropdown { left: -1px; right: -1px; }
+  .collection:first-child > .collection-link { border-radius: 6px 0 0 0; }
+  .collection:last-child > .collection-link { border-radius: 0; border-right: 1px solid rgb(var(--blue-rgb) / .30); }
+}

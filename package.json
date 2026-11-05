@@ -4,8 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && node scripts/relative-image-paths.mjs",
-    "preview": "astro preview"
+    "build": "node scripts/build-catalog.mjs && astro build && node scripts/relative-image-paths.mjs",
+    "preview": "astro preview",
+    "predev": "node scripts/build-catalog.mjs"
   },
   "dependencies": {
     "astro": "^7.4.4"
