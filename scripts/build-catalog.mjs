@@ -38,7 +38,7 @@ function page(title, section, category, entries, home = false) {
 <script src="site-data.js?v=20261105-refined-ice" defer></script><script src="site.js?v=20261105-refined-ice" defer></script>
 </head><body>
 <header><div class="masthead"><a class="site-name" href="index.html">HPC2H2</a><span class="site-description">技术博客</span></div><nav aria-label="合集导航" data-site-nav></nav></header>
-${home ? '<section class="home-intro" aria-label="博客简介"><h1>业余时间筑起的小小世界。</h1><p>整理会大脑会忘记的知识，也留住每月的好事情。</p></section>' : `<p class="breadcrumb">${crumbs.join(' &gt; ')}</p>`}
+${home ? '<section class="home-intro" aria-label="博客简介"><h1>业余时间筑起的小小世界。</h1><p>整理大脑会忘记的知识，也留住每月的好事情。</p></section>' : `<p class="breadcrumb">${crumbs.join(' &gt; ')}</p>`}
 <main class="layout"><section class="article-panel" aria-labelledby="articles-heading">
 <div class="panel-heading"><${home ? 'h2' : 'h1'} id="articles-heading">${escape(title)}</${home ? 'h2' : 'h1'}><span>共 ${entries.length} 篇</span></div>
 <ul class="article-list">${byDate(entries).map(row).join('\n')}</ul>${entries.length ? '' : '<p class="empty-state">暂无文章。</p>'}
