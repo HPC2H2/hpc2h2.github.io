@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>【瑞萨RA2T1-48PIN-V1.0评测】（1）RASC＋FSP生成Keil工程：CMSIS-DAP烧写与调试实战 · HPC2H2</title>
+  <link rel="stylesheet" href="vendor/prism/prism.css">
+  <link rel="stylesheet" href="style.css?v=20261105-refined-ice">
+  <script src="site-data.js?v=20261105-refined-ice" defer></script>
+  <script src="site.js?v=20261105-refined-ice" defer></script>
+  <script src="vendor/prism/prism.js?v=1.30.0-languages" defer></script>
+</head>
+<body>
+  <header>
+    <div class="masthead">
+      <a class="site-name" href="index.html">HPC2H2</a>
+      <span class="site-description">技术博客</span>
+    </div>
+    <nav aria-label="合集导航" data-site-nav></nav>
+  </header>
+  <p class="breadcrumb"><a href="index.html">首页</a> &gt; <a href="collection-1.html">电子世界</a> &gt; <a href="article-6.html">嵌入式软件</a> &gt; 【瑞萨RA2T1-48PIN-V1.0评测】（1）RASC＋FSP生成Keil工程：CMSIS-DAP烧写与调试实战</p>
+  <main class="thread">
+    <div class="thread-heading"><h1>【瑞萨RA2T1-48PIN-V1.0评测】（1）RASC＋FSP生成Keil工程：CMSIS-DAP烧写与调试实战</h1><a href="article-6.html">返回列表</a></div>
+    <div class="post">
+      <aside class="post-author" aria-label="作者"><strong>HPC2H2</strong><span>作者</span></aside>
+      <article class="post-body imported-note" aria-label="【瑞萨RA2T1-48PIN-V1.0评测】（1）RASC＋FSP生成Keil工程：CMSIS-DAP烧写与调试实战">
+        <p class="publish-date">发布时间：<time datetime="2026-11-06T22:31+08:00">2026-11-06 22:31</time> · <a href="https://www.cnblogs.com/HPC2H2/p/23578645" target="_blank" rel="noopener noreferrer">博客园原文</a></p>
+        <div class="note-content">
+<p>本文是不用安装e2studio的而用Keil作为IDE进行开发的，HAL环境配置和调通最小工程教程。</p>
+<ol>
+<li>安装RASC + FSP（setup_fsp_v6_6_0_rasc_v2026-07.exe）：<br>
+<a href="https://github.com/renesas/fsp/releases/tag/v6.6.0" target="_blank" rel="noopener noreferrer">https://github.com/renesas/fsp/releases/tag/v6.6.0</a><br>
+其中RASC是瑞萨的RA图形配置工具，可配置时钟、引脚、ADC、PWM，生成Keil工程。FSP是瑞萨提供的驱动库和软件组件，生成的工程通过它操作外设。<br>
+“FSP 6.6.0 发布说明列出的 Arm Compiler 版本为 6.24，本次使用相同版本。要想看本机的Arm编译器版本，可找到Keil的目录对<code>armclang.exe</code>在PowerShell进行<code>--version</code>的查询，如：</li>
+</ol>
+<pre><code class="language-powershell">&amp; "D:\Keilv5\ARM\ARMCLANG\bin\armclang.exe" --version
+</code></pre>
+<ol start="2">
+<li>
+<p>安装 Renesas.RA_DFP 器件包：<br>
+在Keil Pack Installer中安装R7FA2T107对应的版本。<br>
+（Pack Installer里的版本是6.4.0，如果想获取6.6.0的也可以在https://github.com/renesas/fsp/releases/tag/v6.6.0 Assets栏下载<a href="https://github.com/renesas/fsp/releases/download/v6.6.0/MDK_Device_Packs_v6.6.0.zip" target="_blank" rel="noopener noreferrer">MDK_Device_Packs_v6.6.0.zip</a>）<br>
+<a class="imported-image-link" href="images/renesas-ra2t1-rasc-keil/image-01.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/renesas-ra2t1-rasc-keil/image-01.png" alt="Keil Pack Installer 中的 Renesas.RA_DFP 器件包" width="1893" height="1184" loading="lazy" decoding="async"></a></p>
+</li>
+<li>
+<p>用 RASC 生成 Keil 工程。</p>
+<ol>
+<li>
+<p>在<code>C:\Renesas\RA\sc_v2026-07_fsp_v6.6.0\eclipse\rasc.exe</code> 中，登录瑞萨账号，新建工程，Device R7FA2T1074CFL，IDE选择Keil MDK Version 5。<a class="imported-image-link" href="images/renesas-ra2t1-rasc-keil/image-02.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/renesas-ra2t1-rasc-keil/image-02.png" alt="RASC 新建 R7FA2T1074CFL 的 Keil MDK Version 5 工程" width="1159" height="1067" loading="lazy" decoding="async"></a></p>
+</li>
+<li>
+<p>先配置时钟、保留 SWD，再生成并编译最小工程。时钟源采用内部 HOCO 48 MHz，ICLK 为 48 MHz，PCLKB 为 24 MHz，PCLKD 为 48 MHz。保留 P108 的 SWDIO 和 P300 的 SWCLK 功能。上述数值为配置值，本篇尚未进行外部仪器测量。（点Clocks、Pins、Stacks，检查配置并保存）<a class="imported-image-link" href="images/renesas-ra2t1-rasc-keil/image-03.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/renesas-ra2t1-rasc-keil/image-03.png" alt="RASC 时钟与引脚配置" width="2055" height="1423" loading="lazy" decoding="async"></a><br>
+在Stacks下有Generate Project Content，点击即生成Keil工程。<a class="imported-image-link" href="images/renesas-ra2t1-rasc-keil/image-04.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/renesas-ra2t1-rasc-keil/image-04.png" alt="RASC Stacks 页面生成 Keil 工程" width="1355" height="950" loading="lazy" decoding="async"></a></p>
+</li>
+</ol>
+</li>
+<li>
+<p>在Keil里编译验证通过后，在<code>hal_entry.c</code>中定义全局变量<code>volatile uint32_t g_test_counter = 0;</code>，并在<code>void hal_entry(void)</code>里<code>    /* TODO: add your own code here */</code>下面加上</p>
+</li>
+</ol>
+<pre><code class="language-c">		while (1) {
+			g_test_counter++;
+			R_BSP_SoftwareDelay(100, BSP_DELAY_UNITS_MILLISECONDS);
+		}
+</code></pre>
+<p>并再次编译。<br>
+5. 在Keil中为程序地址配置烧写算法。</p>
+<ol>
+<li>打开 Options for Target → Debug → CMSIS-DAP Debugger → Settings → Flash Download。</li>
+<li>将 RAM for Algorithm 的Start值改为0x20004000，Size值改为0x00001C00。</li>
+<li>在 Programming Algorithm 区域点击 Add。</li>
+<li>选择 RA2T1 64KB Flash，点击 Add。<br>
+<a class="imported-image-link" href="images/renesas-ra2t1-rasc-keil/image-05.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/renesas-ra2t1-rasc-keil/image-05.png" alt="CMSIS-DAP 的 Flash Download 烧写算法及 RAM 参数" width="913" height="599" loading="lazy" decoding="async"></a></li>
+<li>烧录程序并在Debug模式下观察结果。<br>
+在 g_test_counter++ 处设置断点，进入调试后能够命中断点。将 g_test_counter 加入 Watch 窗口，单步执行时可以观察到计数增加。取消断点并连续运行后，再暂停程序，计数值继续增加，验证了最小工程的执行情况。<br>
+<a class="imported-image-link" href="images/renesas-ra2t1-rasc-keil/image-06.png" target="_blank" rel="noopener noreferrer" aria-label="查看原图"><img src="images/renesas-ra2t1-rasc-keil/image-06.png" alt="Keil 断点调试与 g_test_counter 变量观察" width="1862" height="830" loading="lazy" decoding="async"></a></li>
+</ol>
+<h2 id="总结">总结</h2>
+<p>本次完成了 RASC＋FSP 到 Keil MDK 的最小工程搭建，并使用 CMSIS-DAP 实现程序烧写和断点调试。RASC 可以生成工程和外设初始化代码，但切换调试器后，仍需检查 Flash 烧写算法及其 RAM 参数。本次主要问题集中在下载配置，修正后成功运行计数器测试程序。下一篇将开展时钟、GPIO/PWM 和 ADC 的配置与实测。</p>
+        </div>
+      </article>
+    </div>
+    <p class="back-link"><a href="article-6.html">返回嵌入式软件</a></p>
+  </main>
+  <footer>HPC2H2</footer>
+</body>
+</html>

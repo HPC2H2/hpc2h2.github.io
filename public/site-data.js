@@ -131,6 +131,15 @@ window.siteCatalog = {
   ],
   "posts": [
     {
+      "href": "renesas-ra2t1-rasc-keil.html",
+      "title": "【瑞萨RA2T1-48PIN-V1.0评测】（1）RASC＋FSP生成Keil工程：CMSIS-DAP烧写与调试实战",
+      "summary": "配置 RASC＋FSP 环境，图形化配置引脚并生成 Keil 工程，使用 CMSIS-DAP 完成烧写配置和断点调试。",
+      "section": "collection-1",
+      "category": "article-6.html",
+      "date": "2026-11-06T22:31+08:00",
+      "dateLabel": "2026-11-06 22:31"
+    },
+    {
       "href": "monthly-2026-10.html",
       "title": "2026年10月",
       "summary": "简单总结下这个月干了些啥好事情。",
